@@ -31,7 +31,7 @@ import '../../data/services/date_validation_service.dart';
 import '../../../../core/utils/phone_launcher.dart';
 
 String _fmtAmt(double v, {int decimals = 2}) => NumberFormat(
-  '#,##0${decimals > 0 ? '.' + '0' * decimals : ''}',
+  '#,##0${decimals > 0 ? '.${'0' * decimals}' : ''}',
   'en_US',
 ).format(v);
 

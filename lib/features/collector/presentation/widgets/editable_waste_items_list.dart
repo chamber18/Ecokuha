@@ -67,14 +67,6 @@ class _EditableWasteItemsListState extends State<EditableWasteItemsList> {
     );
   }
 
-  double get _total {
-    return _items.fold(0.0, (acc, it) {
-      // Price already includes the boost, so just sum it directly
-      final price = (it['price'] ?? 0).toDouble();
-      return acc + price;
-    });
-  }
-
   void _addItem() {
     showDialog(
       context: context,

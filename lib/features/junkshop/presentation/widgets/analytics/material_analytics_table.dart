@@ -455,49 +455,4 @@ class _MaterialAnalyticsTableState extends State<MaterialAnalyticsTable> {
       ),
     );
   }
-
-  Widget _buildStatusBadge(String status) {
-    Color color;
-    IconData icon;
-
-    switch (status) {
-      case 'Active':
-        color = AppColors.primaryGreen;
-        icon = Icons.check_circle;
-        break;
-      case 'Slow':
-        color = Colors.orange;
-        icon = Icons.warning;
-        break;
-      case 'Stagnant':
-        color = Colors.red;
-        icon = Icons.error;
-        break;
-      default:
-        color = Colors.grey;
-        icon = Icons.help_outline;
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14, color: color),
-          const SizedBox(width: 4),
-          Text(
-            status,
-            style: AppTextStyles.caption.copyWith(
-              color: color,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }

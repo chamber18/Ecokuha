@@ -244,7 +244,6 @@ class _JunkshopStep4ScreenState extends State<JunkshopStep4Screen> {
 
           _buildSummaryItem('✅', 'Business Information', 'Complete'),
           _buildSummaryItem('✅', 'Location Details', 'Complete'),
-          _buildSummaryItem('✅', 'Document Upload', 'Complete'),
           _buildSummaryItem('⏳', 'Business Verification', 'In Progress'),
 
           const SizedBox(height: AppDimensions.spacing16),

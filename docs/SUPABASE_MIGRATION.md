@@ -105,7 +105,7 @@ Registration inserts into `households` / `collectors` / `junkshops` with `id = u
 | `posting_images/posting_{uid}_{ts}_{i}.jpg` | `posting-images` / `{uid}/posting_{ts}_{i}.jpg` |
 | `user_uploads/{uid}/postings/{taskId}/{category}/{file}` | `user-uploads` / `{uid}/postings/{taskId}/{category}/{file}` |
 | `promotions/{junkshopId}/{file}` | `promotions` / `{junkshopId}/{file}` |
-| `collectors/{uid}/documents/{type}_{ts}.jpg`, `junkshops/{uid}/documents/...` | `documents` (PRIVATE) / `{uid}/{role}/{type}_{ts}.jpg`; store the object PATH in `collector_profile.documents.*` / `junkshop_profile.documents.*` and show with `signedDocumentUrl` |
+| `collectors/{uid}/documents/{type}_{ts}.jpg` (junkshops no longer upload documents) | `documents` (PRIVATE) / `{uid}/{role}/{type}_{ts}.jpg`; store the object PATH in `collector_profile.documents.*` and show with `signedDocumentUrl` |
 Every upload path MUST start with the uploader's own uid folder (storage RLS). Public buckets return normal URLs: images load with
 `NetworkImage`/`CachedNetworkImage` (no special provider). `FirebaseImageProvider` is replaced by a plain `NetworkImage`-based provider.
 

@@ -705,11 +705,7 @@ class _ManagePromotionsScreenState extends State<ManagePromotionsScreen>
                               child: OutlinedButton.icon(
                                 onPressed: () {
                                   Navigator.pop(context);
-                                  Navigator.pushNamed(
-                                    context,
-                                    '/junkshop/promotions/edit',
-                                    arguments: {'promotion': promotion},
-                                  );
+                                  _editPromotion(promotion);
                                 },
                                 icon: const Icon(Icons.edit_outlined, size: 16),
                                 label: const Text('Edit'),

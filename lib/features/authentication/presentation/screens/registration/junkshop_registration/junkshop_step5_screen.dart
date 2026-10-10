@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../../../../../core/supabase/supabase_helpers.dart' as sb;
-import 'package:flutter_image_compress/flutter_image_compress.dart';
 import '../../../../../../core/theme/app_colors.dart';
 import '../../../../../../core/theme/app_text_styles.dart';
 import '../../../../../../core/theme/app_dimensions.dart';
@@ -36,62 +33,6 @@ class _JunkshopStep5ScreenState extends State<JunkshopStep5Screen> {
     });
   }
 
-  Future<String?> _uploadDocumentImage(
-    File imageFile,
-    String userId,
-    String documentType,
-  ) async {
-    try {
-      debugPrint('Starting upload for $documentType...');
-      debugPrint('File path: ${imageFile.path}');
-      debugPrint('File exists: ${await imageFile.exists()}');
-
-      if (!await imageFile.exists()) {
-        debugPrint('ERROR: File does not exist!');
-        return null;
-      }
-
-      // Get original file size
-      final fileSize = await imageFile.length();
-      debugPrint('📏 Original file size: $fileSize bytes');
-
-      // Compress image before uploading
-      final compressedFile = await FlutterImageCompress.compressAndGetFile(
-        imageFile.path,
-        '${imageFile.path}_compressed.jpg',
-        quality: 70,
-        minWidth: 1024,
-        minHeight: 1024,
-      );
-
-      final fileToUpload = compressedFile != null
-          ? File(compressedFile.path)
-          : imageFile;
-
-      final compressedSize = await fileToUpload.length();
-      debugPrint(
-        '📉 Compressed size: $compressedSize bytes (${((1 - compressedSize / fileSize) * 100).toStringAsFixed(1)}% reduction)',
-      );
-
-      final fileName =
-          '${documentType}_${DateTime.now().millisecondsSinceEpoch}.jpg';
-      final objectPath = '$userId/junkshop/$fileName';
-      debugPrint('Storage path: documents/$objectPath');
-
-      final storedPath = await sb.uploadPrivateDocument(
-        path: objectPath,
-        file: fileToUpload,
-      );
-      debugPrint('Upload complete for $documentType: $storedPath');
-
-      return storedPath;
-    } catch (e, stackTrace) {
-      debugPrint('ERROR uploading document image $documentType: $e');
-      debugPrint('Stack trace: $stackTrace');
-      return null;
-    }
-  }
-
   void _submitApplication() async {
     if (!_agreeToTerms) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -110,71 +51,6 @@ class _JunkshopStep5ScreenState extends State<JunkshopStep5Screen> {
       final user = Supabase.instance.client.auth.currentUser;
       if (user == null) throw Exception('Not logged in');
       final data = _registrationData ?? <String, dynamic>{};
-
-      // Upload document images to the private documents bucket and store object paths
-      debugPrint('=== Starting document upload process ===');
-
-      // Reconstruct File objects from paths
-      final documentPaths =
-          data['documentPaths'] as Map<String, dynamic>? ?? {};
-      debugPrint('Document paths received: $documentPaths');
-
-      final documentUrls = <String, dynamic>{};
-
-      for (final entry in documentPaths.entries) {
-        final path = entry.value as String?;
-        if (path == null || path.isEmpty) {
-          debugPrint('⚠️ ${entry.key} has no path');
-          continue;
-        }
-
-        debugPrint('Processing ${entry.key}: $path');
-
-        final file = File(path);
-        final exists = await file.exists();
-        debugPrint('  - File exists: $exists');
-
-        if (!exists) {
-          debugPrint('❌ File does not exist: $path');
-          continue;
-        }
-
-        try {
-          debugPrint('Uploading ${entry.key} to Storage...');
-          final url = await _uploadDocumentImage(file, user.id, entry.key);
-
-          if (url != null && url.isNotEmpty) {
-            documentUrls[entry.key] = url;
-            debugPrint('✅ Successfully uploaded ${entry.key}: $url');
-          } else {
-            debugPrint('❌ Upload returned null/empty for ${entry.key}');
-          }
-        } catch (e, stackTrace) {
-          debugPrint('❌ Exception uploading ${entry.key}: $e');
-          debugPrint('Stack trace: $stackTrace');
-        }
-      }
-
-      debugPrint('Final document URLs: $documentUrls');
-      debugPrint('=== Document upload process complete ===');
-
-      // Verify that required documents were uploaded
-      if (documentUrls.isEmpty) {
-        setState(() {
-          _isSubmitting = false;
-        });
-
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Failed to upload documents. Please try again.'),
-              backgroundColor: AppColors.errorColor,
-              duration: Duration(seconds: 4),
-            ),
-          );
-        }
-        return;
-      }
 
       // Normalize and group fields to avoid nulls
       final business = {
@@ -207,7 +83,6 @@ class _JunkshopStep5ScreenState extends State<JunkshopStep5Screen> {
         'junkshop_profile': {
           'business': business,
           'location': location,
-          'documents': documentUrls,
         },
         if (data['latitude'] is num) 'latitude': data['latitude'],
         if (data['longitude'] is num) 'longitude': data['longitude'],
@@ -320,20 +195,6 @@ class _JunkshopStep5ScreenState extends State<JunkshopStep5Screen> {
     final serviceRadiusKm = data['serviceRadiusKm'] as double? ?? 0.0;
     final hasPickupService = data['hasPickupService'] as bool? ?? false;
 
-    final documentsMap = data['documents'] as Map<String, dynamic>? ?? {};
-    final documentsUploaded = documentsMap.entries
-        .where((entry) => entry.value == true)
-        .map((entry) {
-          final key = entry.key;
-          if (key == 'business_permit') {
-            return 'Business Permit: ✓ Uploaded';
-          } else if (key == 'owner_valid_id') {
-            return "Owner's Valid ID: ✓ Uploaded";
-          }
-          return '$key: ✓ Uploaded';
-        })
-        .toList();
-
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacing24),
       child: Column(
@@ -411,16 +272,7 @@ class _JunkshopStep5ScreenState extends State<JunkshopStep5Screen> {
           if (hasPickupService || serviceRadiusKm > 0)
             const SizedBox(height: AppDimensions.spacing12),
 
-          // Documents Card
-          if (documentsUploaded.isNotEmpty)
-            _buildReviewCard(
-              icon: Icons.folder_open,
-              title: 'Submitted Documents',
-              items: documentsUploaded,
-            ),
-
-          if (documentsUploaded.isNotEmpty)
-            const SizedBox(height: AppDimensions.spacing16),
+          const SizedBox(height: AppDimensions.spacing16),
 
           // Agreements Section
           Text(

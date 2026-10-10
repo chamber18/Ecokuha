@@ -20,7 +20,6 @@ import 'features/authentication/presentation/screens/welcome_screen.dart';
 import 'features/authentication/presentation/screens/registration/household_registration_screen.dart';
 import 'features/authentication/presentation/screens/registration/junkshop_registration/junkshop_step1_screen.dart';
 import 'features/authentication/presentation/screens/registration/junkshop_registration/junkshop_step2_screen.dart';
-import 'features/authentication/presentation/screens/registration/junkshop_registration/junkshop_step3_screen.dart';
 import 'features/authentication/presentation/screens/registration/junkshop_registration/junkshop_step4_screen.dart';
 import 'features/authentication/presentation/screens/registration/junkshop_registration/junkshop_step5_screen.dart';
 import 'features/authentication/presentation/screens/registration/junkshop_registration/junkshop_pending_screen.dart';
@@ -260,7 +259,6 @@ class EcoKuhaApp extends StatelessWidget {
               const HouseholdRegistrationScreen(),
           '/junkshop-register-1': (context) => const JunkshopStep1Screen(),
           '/junkshop-register-2': (context) => const JunkshopStep2Screen(),
-          '/junkshop-register-3': (context) => const JunkshopStep3Screen(),
           '/junkshop-register-4': (context) => const JunkshopStep4Screen(),
           '/junkshop-register-5': (context) => const JunkshopStep5Screen(),
           '/junkshop-pending': (context) => const JunkshopPendingScreen(),

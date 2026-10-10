@@ -161,22 +161,8 @@ class HouseholdPostingRepository implements IHouseholdPostingRepository {
           (userData?[UserFields.fullName] ?? userData?[UserFields.name])
               ?.toString();
       final phone = userData?[UserFields.phone]?.toString();
-      final city = userData?[UserFields.city]?.toString();
-      final province = userData?[UserFields.province]?.toString();
       final address = userData?[UserFields.address]?.toString();
       final photo = userData?[UserFields.profileImageUrl]?.toString();
-
-      // Build addressShort for quick display
-      String? addressShort;
-      if (city != null && city.isNotEmpty) {
-        addressShort = province != null && province.isNotEmpty
-            ? '$city, $province'
-            : city;
-      } else if (province != null && province.isNotEmpty) {
-        addressShort = province;
-      } else if (address != null && address.isNotEmpty) {
-        addressShort = address;
-      }
 
       // Build household nested object with all details
       householdData[UserFields.id] = uid;

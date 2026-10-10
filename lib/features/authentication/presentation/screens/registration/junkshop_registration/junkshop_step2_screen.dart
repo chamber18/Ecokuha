@@ -61,7 +61,7 @@ class _JunkshopStep2ScreenState extends State<JunkshopStep2Screen> {
 
       Navigator.pushNamed(
         context,
-        '/junkshop-register-3',
+        '/junkshop-register-5',
         arguments: junkshopData,
       );
     }

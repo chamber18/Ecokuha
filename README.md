@@ -1,16 +1,50 @@
-# ecokuha
+# EcoKuha
 
-A new Flutter project.
+A Flutter app for waste pickup and recycling in Davao del Norte, Philippines.
+It connects **households**, **collectors** and **junkshops**.
 
-## Getting Started
+## Stack
 
-This project is a starting point for a Flutter application.
+- Flutter / Dart, BLoC state management, `get_it` dependency injection
+- Supabase (Postgres + RLS, Auth, Storage, Realtime, pg_cron)
 
-A few resources to get you started if this is your first Flutter project:
+## Getting started
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+```bash
+flutter pub get
+flutter run                          # Android / iOS / desktop
+flutter run -d web-server --web-port 8080   # Web (open http://localhost:8080)
+```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+The Supabase URL and publishable key default to the project in
+`lib/core/supabase/supabase_config.dart`. Override them per environment:
+
+```bash
+flutter run --dart-define=SUPABASE_URL=... --dart-define=SUPABASE_PUBLISHABLE_KEY=...
+```
+
+Supabase Auth must have **Confirm email** turned off for sign-up to log in immediately.
+
+## Database
+
+Schema, RLS policies, triggers, storage policies and cron jobs live in
+`supabase/migrations/` and are applied in filename order.
+
+## Status of features
+
+| Feature | Status |
+| --- | --- |
+| Household, Collector, Junkshop flows | Working |
+| Chat between users | Working |
+| Promotions | Working |
+| Maps | On hold (Google Maps provider shut down) |
+| AI waste detection | On hold (disabled) |
+| Push notifications | On hold |
+| Collector payment methods | Not implemented yet |
+
+## Tests
+
+```bash
+flutter analyze
+flutter test
+```

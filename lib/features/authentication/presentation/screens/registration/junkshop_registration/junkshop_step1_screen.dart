@@ -100,7 +100,7 @@ class _JunkshopStep1ScreenState extends State<JunkshopStep1Screen> {
 
       Navigator.pushNamed(
         context,
-        '/junkshop-register-3',
+        '/junkshop-register-5',
         arguments: junkshopData,
       );
     }
@@ -316,7 +316,7 @@ class _JunkshopStep1ScreenState extends State<JunkshopStep1Screen> {
               Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  'Next step: Upload Documents',
+                  'Next step: Review & Submit',
                   style: AppTextStyles.bodySmall.copyWith(
                     color: AppColors.textSecondary,
                     fontStyle: FontStyle.italic,

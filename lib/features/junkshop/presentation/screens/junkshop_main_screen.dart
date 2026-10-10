@@ -64,8 +64,9 @@ class _JunkshopMainScreenState extends State<JunkshopMainScreen> {
       return Stream.value(false);
     }
 
-    if (kDebugMode)
-      print('📬 _hasUnreadMessages: Listening for userId=$userId');
+    if (kDebugMode) {
+      print('_hasUnreadMessages: Listening for userId=$userId');
+    }
 
     // RLS already limits conversations to the ones the user participates in.
     return supabase.from('conversations').stream(primaryKey: ['id']).map((
@@ -86,8 +87,9 @@ class _JunkshopMainScreenState extends State<JunkshopMainScreen> {
         );
 
         if (deletedBy.contains(userId)) {
-          if (kDebugMode)
-            print('📬 Conversation ${data['id']}: Skipped (deleted by user)');
+          if (kDebugMode) {
+            print('Conversation ${data['id']}: Skipped (deleted by user)');
+          }
           continue;
         }
 

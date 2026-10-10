@@ -807,12 +807,14 @@ class _CollectorEarningsScreenState extends State<CollectorEarningsScreen>
     _tabController.animateTo(2);
   }
 
-  void _editPaymentMethod() {
-    Navigator.pushNamed(context, '/collector-payment-methods');
-  }
+  void _editPaymentMethod() => _showPaymentMethodsComingSoon();
 
-  void _addPaymentMethod() {
-    Navigator.pushNamed(context, '/collector-add-payment-method');
+  void _addPaymentMethod() => _showPaymentMethodsComingSoon();
+
+  void _showPaymentMethodsComingSoon() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Payment methods are coming soon.')),
+    );
   }
 
   void _downloadEarningsReport() {

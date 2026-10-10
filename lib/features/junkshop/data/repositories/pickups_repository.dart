@@ -671,9 +671,7 @@ class JunkshopPickupsRepository implements IJunkshopPickupsRepository {
 
   /// Gets the current logged-in junkshop user ID
   Future<String?> _getCurrentJunkshopId() async {
-    final uid = currentUid;
-    if (uid == null && kDebugMode) print('DEBUG: No user logged in');
-    return uid;
+    return currentUid;
   }
 
   bool _supportedPlatform() {

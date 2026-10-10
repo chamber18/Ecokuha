@@ -96,7 +96,7 @@ create table public.junkshops (
   phone text,
   profile_image_url text,
   role text not null default 'junkshop' check (role = 'junkshop'),
-  junkshop_profile jsonb not null default '{}',  -- {business:{...}, location:{...}, documents:{...}}
+  junkshop_profile jsonb not null default '{}',  -- {business:{...}, location:{...}}
   settings jsonb not null default '{}',          -- business controls
   service_radius numeric(8,2),
   latitude double precision check (latitude between -90 and 90),

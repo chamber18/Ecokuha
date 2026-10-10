@@ -2715,21 +2715,6 @@ class _PostItemsScreenState extends State<PostItemsScreen>
 
     final results = <String, dynamic>{};
 
-    // Calculate total value using minimum price first, if fails try maximum price
-    double totalMin = _detectedItems.fold<double>(0, (acc, item) {
-      if (item.priceMin != null && item.priceMin! > 0) {
-        return acc + (item.priceMin! * item.quantity);
-      }
-      return acc + (item.estimatedValue * item.quantity);
-    });
-
-    double totalMax = _detectedItems.fold<double>(0, (acc, item) {
-      if (item.priceMax != null && item.priceMax! > 0) {
-        return acc + (item.priceMax! * item.quantity);
-      }
-      return acc + (item.estimatedValue * item.quantity);
-    });
-
     // 1. Validate weight-to-value ratio
     if (_maxWeightPerValueRatio != null) {
       final weightStr = _estimatedWeightController.text;
