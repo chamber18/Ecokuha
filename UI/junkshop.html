@@ -1,0 +1,1537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>B.B.P. Tracker - Junk Shop</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <style>
+        :root {
+            --primary-green: #10B981;
+            --dark-green: #059669;
+            --primary-blue: #3B82F6;
+            --background-light: #f8fafc;
+            --background-dark: #f1f5f9;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            --success-color: #16a34a;
+            --error-color: #ef4444;
+            --warn-color: #f59e0b;
+            --nav-height: 90px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #e5e7eb;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            color: var(--text-primary);
+            padding: 20px 0;
+        }
+
+        .phone-container {
+            width: 375px;
+            height: 812px;
+            background: var(--background-light);
+            border-radius: 40px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .page {
+            display: none;
+            flex-direction: column;
+            flex-grow: 1;
+            height: 100%;
+            position: relative;
+        }
+        .page.active {
+            display: flex;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding-bottom: var(--nav-height);
+        }
+        .main-content::-webkit-scrollbar { display: none; }
+        .main-content { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .header {
+            background: var(--background-light); padding: 50px 24px 16px; color: var(--text-primary);
+            border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; gap: 16px;
+            flex-shrink: 0;
+        }
+        .header .header-left { display: flex; align-items: center; gap: 16px; flex-grow: 1; }
+        .header .back-btn { color: var(--text-primary); text-decoration: none; font-size: 24px; cursor: pointer; }
+        .header h1 { font-size: 20px; font-weight: 700; }
+        .header .header-actions { position: relative; }
+        .header .action-btn { background: none; border: none; font-size: 16px; font-weight: 700; color: var(--primary-green); cursor: pointer; padding: 8px 16px; }
+        .header .more-btn { font-size: 24px; cursor: pointer; color: var(--text-primary); font-weight: 800; letter-spacing: -2px; line-height: 1; }
+        .dropdown-menu {
+            display: none; position: absolute; top: 30px; right: 0;
+            background: white; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            padding: 8px; z-index: 10;
+        }
+        .dropdown-menu.show { display: block; }
+        .dropdown-menu .dropdown-item {
+            padding: 8px 12px; font-size: 14px; cursor: pointer; white-space: nowrap;
+        }
+        .dropdown-menu .dropdown-item.remove { color: var(--error-color); }
+
+        /* --- DASHBOARD (HOME) STYLES --- */
+        #dashboard-page .header {
+            background: linear-gradient(135deg, var(--primary-green) 0%, var(--dark-green) 100%);
+            color: white;
+            border-bottom-left-radius: 24px;
+            border-bottom-right-radius: 24px;
+            padding-bottom: 24px;
+        }
+        #dashboard-page .header-top { display: flex; justify-content: space-between; align-items: flex-start; width: 100%; }
+        #dashboard-page .header-logo-section { display: flex; flex-direction: column; }
+        #dashboard-page .app-title { font-size: 24px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+        #dashboard-page .role-badge {
+            background: rgba(255, 255, 255, 0.2); padding: 4px 10px; border-radius: 12px;
+            font-size: 12px; font-weight: 600; backdrop-filter: blur(5px);
+            display: inline-flex; align-items: center; gap: 4px; margin-top: 8px; align-self: flex-start;
+        }
+        .welcome-section { padding: 24px; }
+        .welcome-section h1 { font-size: 28px; font-weight: 800; margin-bottom: 4px; color: var(--text-primary); }
+        .welcome-section p { font-size: 15px; color: var(--text-secondary); }
+        
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 0 24px 24px; }
+        .stat-card { background: white; padding: 16px; border-radius: 16px; box-shadow: var(--card-shadow); border: 1px solid #e2e8f0; cursor: pointer; text-align: center; }
+        .stat-value { font-size: 22px; font-weight: 800; margin-bottom: 2px; }
+        .stat-label { font-size: 12px; color: var(--text-secondary); font-weight: 600; }
+        
+        .quick-actions-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+            padding: 0 24px 24px;
+        }
+        .quick-action-btn {
+            display: flex; flex-direction: column; align-items: center; gap: 8px;
+            cursor: pointer; text-align: center;
+        }
+        .quick-action-btn .icon-wrapper {
+            width: 56px; height: 56px; border-radius: 16px; background: white;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px; box-shadow: var(--card-shadow); border: 1px solid #e2e8f0;
+        }
+        .quick-action-btn .label { font-size: 11px; font-weight: 600; color: var(--text-secondary); }
+
+        .section-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; padding: 0 24px; display: flex; justify-content: space-between; align-items: center;}
+        .section-title .view-all { font-size: 13px; font-weight: 600; color: var(--primary-green); cursor: pointer; }
+
+        .listing-card {
+            background: white; border-radius: 16px; padding: 16px; margin: 0 24px 12px;
+            box-shadow: var(--card-shadow); border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 12px;
+            cursor: pointer;
+        }
+        .listing-icon {
+            width: 48px; height: 48px; border-radius: 12px; background: var(--background-dark);
+            display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0;
+        }
+        .listing-details { flex-grow: 1; }
+        .listing-details h4 { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+        .listing-details p { font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; }
+        .listing-footer { display: flex; justify-content: space-between; align-items: center; }
+        .listing-value { font-size: 14px; font-weight: 700; color: var(--dark-green); }
+        .listing-distance { padding: 4px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; background: #E0E7FF; color: #4F46E5; }
+        
+        /* --- PICKUPS PAGE STYLES --- */
+        #pickups-page .main-content, #history-page .main-content { padding: 16px 0 var(--nav-height); }
+        .tab-nav {
+            display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;
+            padding: 0 24px 16px;
+        }
+        .tab-item {
+            background-color: white; border-radius: 16px; padding: 16px;
+            text-align: center; font-weight: 700;
+            font-size: 14px; cursor: pointer; 
+            color: var(--text-secondary); transition: all 0.3s;
+            position: relative; box-shadow: var(--card-shadow);
+            border: 2px solid transparent;
+        }
+        .tab-item.active {
+            color: var(--primary-green);
+            border-color: var(--primary-green);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.1);
+        }
+        .tab-item .count-badge {
+            position: absolute; top: -8px; right: -8px;
+            background-color: var(--primary-green); color: white;
+            width: 24px; height: 24px; border-radius: 50%;
+            font-size: 12px; font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+            border: 2px solid white;
+        }
+        .tab-item:not(.active) .count-badge {
+            background-color: var(--text-secondary);
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        .sub-tab-nav { display: flex; gap: 8px; padding: 0 24px 16px; }
+        .sub-tab-item {
+            flex: 1; text-align: center; padding: 10px; border-radius: 12px;
+            font-weight: 600; font-size: 13px; color: var(--text-secondary);
+            background-color: var(--background-dark); cursor: pointer;
+        }
+        .sub-tab-item.active { background-color: var(--primary-green); color: white; }
+        .sub-tab-content { display: none; }
+        .sub-tab-content.active { display: block; }
+
+        /* --- PICKUP DETAILS PAGE --- */
+        #pickup-details-page .main-content { padding: 0; }
+        #pickup-details-page .map-container { height: 40%; background: #e2e8f0; }
+        #pickup-details-page .details-content-container {
+            background: var(--background-light); border-top-left-radius: 24px; border-top-right-radius: 24px;
+            padding: 24px; transform: translateY(-20px);
+        }
+        #pickup-details-page .waste-image-full {
+            height: 200px; border-radius: 16px; background-size: cover; background-position: center;
+            margin-bottom: 16px; box-shadow: var(--card-shadow);
+        }
+        .details-card {
+            background: white; border-radius: 16px; padding: 16px;
+            margin-bottom: 16px; box-shadow: var(--card-shadow);
+        }
+        .details-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 12px; }
+        .detail-row { display: flex; justify-content: space-between; align-items: center; font-size: 14px; padding: 8px 0; border-bottom: 1px solid #f1f5f9; }
+        .detail-row:last-child { border-bottom: none; }
+        .detail-row .label { color: var(--text-secondary); }
+        .detail-row .value { font-weight: 600; }
+        .item-entry { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; font-size: 14px; border-bottom: 1px solid #f1f5f9;}
+        .item-entry:last-child { border-bottom: none; }
+        .item-name { color: var(--text-primary); }
+        .item-weight { color: var(--text-secondary); font-weight: 600; }
+        .action-buttons { display: flex; gap: 12px; margin-top: 16px; }
+        .action-buttons button { flex: 1; padding: 16px; border-radius: 12px; border: none; font-weight: 700; font-size: 16px; cursor: pointer; }
+        .action-buttons .reject-btn { background: #fee2e2; color: var(--error-color); }
+        .action-buttons .assign-btn { background: var(--dark-green); color: white; }
+        .action-buttons .message-btn { background: #dbeafe; color: var(--primary-blue); }
+        .availability-calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-top: 12px; }
+        .day-item { text-align: center; padding: 8px 4px; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .day-name { font-size: 11px; font-weight: 600; color: var(--text-secondary); }
+        .day-date { font-size: 16px; font-weight: 700; margin-top: 4px; }
+        .day-time { font-size: 10px; color: var(--text-secondary); margin-top: 2px; }
+        .day-item.available { background-color: #dcfce7; color: #166534; border-color: #a7f3d0; }
+        .day-item.unavailable { background-color: #fee2e2; color: #991b1b; border-color: #fecaca; text-decoration: line-through; opacity: 0.6; }
+        .day-item.current-day { border-color: var(--primary-blue); box-shadow: 0 0 0 2px var(--primary-blue); }
+
+        /* --- COLLECTORS & INVENTORY PAGES --- */
+        #collectors-page .main-content, #inventory-page .main-content { padding: 16px 24px var(--nav-height); }
+        .collector-card {
+            background: white; border-radius: 16px; padding: 16px; margin-bottom: 12px;
+            box-shadow: var(--card-shadow); display: flex; align-items: center; gap: 12px;
+            cursor: pointer;
+        }
+        .collector-avatar {
+            width: 48px; height: 48px; border-radius: 50%;
+            background: var(--background-dark); display: flex; align-items: center; justify-content: center;
+            font-size: 24px; flex-shrink: 0;
+        }
+        .collector-info { flex-grow: 1; }
+        .collector-name { font-weight: 700; }
+        .collector-stats { font-size: 12px; color: var(--text-secondary); }
+        .collector-status { padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+        .status-idle { background: #dcfce7; color: #16a34a; }
+        .status-on-route { background: #fef3c7; color: #d97706; }
+        .status-offline { background: #e5e7eb; color: #6b7280; }
+        
+        #collector-details-page .main-content { padding: 0 0 24px; }
+        #collector-details-page .profile-header {
+            padding: 24px; text-align: center;
+            background: linear-gradient(135deg, var(--primary-green) 0%, var(--dark-green) 100%);
+            color: white; border-bottom-left-radius: 24px; border-bottom-right-radius: 24px;
+        }
+        #collector-details-page .profile-avatar {
+            width: 90px; height: 90px; border-radius: 50%; background: white; color: var(--text-primary);
+            display: inline-flex; align-items: center; justify-content: center; font-size: 48px;
+            margin-bottom: 12px; border: 4px solid white; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        #collector-details-page .profile-name { font-size: 22px; font-weight: 800; }
+        #collector-details-page .performance-stats {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; padding: 24px;
+        }
+        #collector-details-page .stat-item { text-align: center; }
+        #collector-details-page .live-route-card {
+            background: white; border-radius: 16px; margin: -12px 24px 24px; padding: 16px;
+            box-shadow: var(--card-shadow); border: 1px solid #e2e8f0;
+        }
+        #collector-details-page .live-route-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 12px; }
+        #collector-details-page .route-actions { display: flex; gap: 12px; margin-top: 16px; }
+        #collector-details-page .route-actions button {
+            flex: 1; padding: 12px; border-radius: 12px; border: none; font-weight: 700;
+            font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        #collector-details-page .route-actions .message-btn { background: #dbeafe; color: var(--primary-blue); }
+        #collector-details-page .route-actions .view-route-btn { background: var(--dark-green); color: white; }
+        
+        #inventory-page .sell-inventory-btn {
+            width: 100%; background: var(--primary-blue); color: white; border: none; padding: 18px; border-radius: 20px;
+            font-size: 16px; font-weight: 700; display: flex; align-items: center; justify-content: center;
+            gap: 12px; box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3); cursor: pointer;
+        }
+        #inventory-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+        }
+        .inventory-card {
+            background: white; border-radius: 16px; padding: 16px;
+            box-shadow: var(--card-shadow); text-align: center;
+        }
+        .inventory-card .progress-circle {
+            width: 80px; height: 80px; margin: 0 auto 12px;
+            border-radius: 50%; display: grid; place-items: center;
+            background: radial-gradient(closest-side, white 79%, transparent 80% 100%), conic-gradient(var(--primary-green) var(--progress, 0%), var(--background-dark) 0);
+        }
+        .inventory-card .progress-circle .icon { font-size: 32px; }
+        .inventory-card .material-name { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+        .inventory-card .stock-weight { font-size: 16px; font-weight: 800; color: var(--dark-green); margin-bottom: 2px; }
+        .inventory-card .stock-value { font-size: 12px; color: var(--text-secondary); }
+
+        /* --- PROFILE, REPORTS, ACCOUNT & PRICE MANAGEMENT PAGES --- */
+        #profile-page .main-content, #price-management-page .main-content, #worker-applications-page .main-content, #business-reports-page .main-content, #account-page .main-content { padding: 16px 24px var(--nav-height); }
+        #price-management-page .main-content { padding-bottom: 80px; }
+        #profile-page .profile-header { text-align: center; padding: 16px 0 24px; position: relative; }
+        #profile-page .profile-avatar-wrapper { position: relative; display: inline-block; }
+        #profile-page .profile-avatar {
+            width: 90px; height: 90px; border-radius: 50%; background: var(--dark-green); color: white;
+            display: inline-flex; align-items: center; justify-content: center; font-size: 48px;
+            margin-bottom: 12px; border: 4px solid white; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        #profile-page .edit-avatar-btn {
+            position: absolute; bottom: 12px; right: 0;
+            width: 28px; height: 28px; background: white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15); cursor: pointer; border: 2px solid var(--background-light);
+            font-size: 14px;
+        }
+        #profile-page .profile-name { font-size: 22px; font-weight: 800; }
+        .settings-list {
+            background: white; border-radius: 16px; box-shadow: var(--card-shadow); padding: 0 16px; margin-bottom: 16px;
+        }
+        .settings-list .setting-item {
+            display: flex; align-items: center; padding: 16px 0;
+            border-bottom: 1px solid #f1f5f9; font-weight: 600; cursor: pointer;
+        }
+        .settings-list .setting-item:last-child { border-bottom: none; }
+        .settings-list .setting-item .icon { margin-right: 16px; font-size: 20px; color: var(--text-secondary); }
+        .settings-list .setting-item .arrow { margin-left: auto; color: var(--text-secondary); }
+        
+        #price-management-page .price-list-item {
+            background: white; border-radius: 12px; padding: 12px; margin-bottom: 12px;
+            box-shadow: var(--card-shadow); border-bottom: 1px solid #f1f5f9;
+        }
+        #price-management-page .price-input-group {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px;
+        }
+        #price-management-page .price-input { width: 100%; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px; font-size: 14px; }
+        #price-management-page .price-input.price-value-input { text-align: right; }
+        #price-management-page .unit-select { border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px; font-size: 14px; background: white; width: 100%; }
+        #price-management-page .add-material-btn {
+            width: 100%; padding: 16px; border-radius: 12px; border: 2px dashed #cbd5e1;
+            background: none; color: var(--text-secondary); font-weight: 600; cursor: pointer;
+        }
+        
+        #account-page .profile-form-container { background: white; border-radius: 16px; padding: 16px; box-shadow: var(--card-shadow); }
+        #account-page .form-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; margin-bottom: 16px; border-bottom: 1px solid #f1f5f9; }
+        #account-page .form-header h2 { font-size: 18px; }
+        #account-page .form-header .save-btn { background: var(--primary-blue); color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+        #account-page .form-group { margin-bottom: 16px; }
+        #account-page .form-group label { display: block; font-size: 14px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; }
+        #account-page .form-group input { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 16px; }
+        
+        #worker-applications-page .application-card {
+            background: white; border-radius: 16px; padding: 16px; margin-bottom: 12px; box-shadow: var(--card-shadow);
+        }
+        #worker-applications-page .application-header { display: flex; gap: 12px; align-items: center; margin-bottom: 12px; }
+        #worker-applications-page .application-actions { display: flex; gap: 12px; margin-top: 16px; border-top: 1px solid #f1f5f9; padding-top: 16px; }
+        
+        #business-reports-page .report-card { background: white; border-radius: 16px; padding: 16px; margin-bottom: 16px; box-shadow: var(--card-shadow); }
+        #business-reports-page .report-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 12px; }
+        #business-reports-page .chart-placeholder { height: 150px; background: var(--background-dark); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); font-weight: 600; }
+
+        /* --- CHAT & NOTIFICATION PAGES --- */
+        #chat-list-page .header .icon-btn { font-size: 24px; cursor: pointer; }
+        #new-chat-page .main-content { padding: 16px 0; }
+        #new-chat-page .search-bar-container { padding: 0 24px 16px; }
+        #new-chat-page #user-search-input { width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid #e2e8f0; font-size: 16px; }
+        #new-chat-page .user-list-item { display: flex; align-items: center; gap: 12px; padding: 12px 24px; cursor: pointer; }
+        #new-chat-page .user-list-item:hover { background: var(--background-dark); }
+        
+        #chat-list-page .main-content, #conversation-page .main-content, #notifications-page .main-content { padding: 0; }
+        #chat-list-page .chat-list-item, #notifications-page .notification-item {
+            display: flex; align-items: center; gap: 16px; padding: 16px 24px;
+            border-bottom: 1px solid #e2e8f0; cursor: pointer;
+        }
+        #chat-list-page .chat-list-item:hover, #notifications-page .notification-item:hover { background-color: var(--background-dark); }
+        #chat-list-page .chat-avatar {
+            width: 52px; height: 52px; border-radius: 50%; background: var(--background-dark);
+            display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0;
+            position: relative;
+        }
+        #chat-list-page .active-dot {
+            position: absolute; top: 0; right: 0; width: 12px; height: 12px;
+            background: var(--success-color); border-radius: 50%; border: 2px solid white;
+        }
+        #chat-list-page .chat-info, #notifications-page .notification-details { flex-grow: 1; min-width: 0; }
+        #chat-list-page .chat-name-row { display: flex; align-items: center; gap: 8px; }
+        #chat-list-page .chat-name { font-weight: 700; font-size: 16px; }
+        #chat-list-page .chat-role { font-size: 14px; color: var(--text-secondary); }
+        #chat-list-page .chat-preview { font-size: 14px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        #chat-list-page .chat-meta { text-align: right; flex-shrink: 0; }
+        #chat-list-page .chat-time { font-size: 12px; color: var(--text-secondary); }
+        #chat-list-page .unread-dot {
+            background-color: var(--primary-green); color: white; font-size: 11px; font-weight: 700;
+            width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            margin-top: 8px; margin-left: auto;
+        }
+        #notifications-page .notification-item.unread { background-color: #f0fdf4; }
+        #notifications-page .notification-icon {
+            width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center; font-size: 20px;
+        }
+        #notifications-page .notification-icon.new-request { background-color: #dbeafe; color: #3b82f6; }
+        #notifications-page .notification-icon.completed { background-color: #dcfce7; color: #16a34a; }
+        #notifications-page .notification-icon.application { background-color: #e0e7ff; color: #4f46e5; }
+        #notifications-page .notification-details p { font-size: 14px; line-height: 1.4; margin: 0; }
+        #notifications-page .notification-details .time { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+
+        #conversation-page { padding-bottom: 0; }
+        #conversation-page .chat-container { padding: 16px; display: flex; flex-direction: column; gap: 4px; flex-grow: 1; overflow-y: auto; }
+        .message-wrapper { display: flex; flex-direction: column; margin-bottom: 8px; }
+        .message-wrapper.user-message-wrapper { align-items: flex-end; }
+        .message-wrapper.contact-message-wrapper { align-items: flex-start; }
+        #conversation-page .chat-message { max-width: 80%; padding: 12px 16px; border-radius: 18px; line-height: 1.5; word-wrap: break-word; }
+        #conversation-page .user-message { background-color: var(--dark-green); color: white; border-bottom-right-radius: 4px; }
+        #conversation-page .contact-message { background-color: var(--background-dark); color: var(--text-primary); border-bottom-left-radius: 4px; }
+        .message-time { font-size: 11px; color: var(--text-secondary); margin: 4px 8px 0; }
+        #conversation-page .chat-input-area { flex-shrink: 0; padding: 16px; background: var(--background-light); border-top: 1px solid #e2e8f0; }
+        #conversation-page .chat-input-container { display: flex; gap: 12px; align-items: center; }
+        #conversation-page #chat-input { flex-grow: 1; padding: 12px 16px; border: 1px solid #e2e8f0; border-radius: 20px; font-family: 'Inter'; font-size: 14px; }
+        #conversation-page #send-btn {
+            background: var(--dark-green); color: white; border: none; width: 44px; height: 44px; border-radius: 50%;
+            font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+        }
+        
+        /* --- HISTORY PAGE --- */
+        #history-page .transaction-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 24px; border-bottom: 1px solid #f1f5f9;
+        }
+        #history-page .transaction-icon {
+            width: 40px; height: 40px; border-radius: 10px; background: var(--background-dark);
+            display: flex; align-items: center; justify-content: center; font-size: 18px;
+        }
+        #history-page .transaction-details { flex-grow: 1; }
+        #history-page .transaction-details h4 { font-size: 14px; font-weight: 600; }
+        #history-page .transaction-details p { font-size: 12px; color: var(--text-secondary); }
+        #history-page .transaction-amount.purchase { color: var(--error-color); }
+        #history-page .transaction-amount.sale { color: var(--success-color); }
+        
+        /* --- NEW NAVIGATION STYLES --- */
+        .bottom-nav {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            width: 100%; height: var(--nav-height); background: white;
+            display: flex; justify-content: center; align-items: center;
+            padding: 0 10px 15px; border-top: 1px solid #e2e8f0; z-index: 100;
+        }
+        .bottom-nav.hidden { display: none; }
+        .nav-items { display: flex; justify-content: space-around; align-items: center; width: 100%; height: 100%; }
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center; gap: 4px;
+            color: var(--text-secondary); text-decoration: none; cursor: pointer;
+            font-size: 10px; font-weight: 600; flex: 1; text-align: center;
+            transition: color 0.2s ease-in-out;
+        }
+        .nav-item.active { color: var(--primary-green); }
+        .nav-icon { width: 28px; height: 28px; position: relative; }
+        .nav-icon svg { width: 100%; height: 100%; position: absolute; top: 0; left: 0; transition: opacity 0.2s ease-in-out; }
+        .nav-icon .icon-filled { opacity: 0; color: var(--primary-green); }
+        .nav-icon .icon-outline { opacity: 1; color: var(--text-secondary); }
+        .nav-item.active .nav-icon .icon-filled { opacity: 1; }
+        .nav-item.active .nav-icon .icon-outline { opacity: 0; }
+        .nav-item-post { flex: 1; text-align: center; }
+        .nav-item-post .post-btn-inner {
+            width: 60px; height: 60px;
+            background: linear-gradient(135deg, var(--primary-green) 0%, var(--dark-green) 100%);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            color: white; border: 4px solid var(--background-light); box-shadow: none;
+            margin: -35px auto 0; position: relative; z-index: 1; cursor: pointer;
+        }
+        .nav-item-post .post-btn-inner svg { width: 28px; height: 28px; }
+        .nav-item-post span {
+            display: block; margin-top: 4px; font-size: 10px;
+            font-weight: 600; color: var(--text-secondary);
+        }
+
+        /* MODAL STYLES */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6);
+            display: flex; justify-content: center; align-items: center; z-index: 1000;
+            opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal-overlay.visible { opacity: 1; visibility: visible; }
+        .modal-content {
+            background: white; padding: 24px; border-radius: 20px; width: 90%; max-width: 340px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); transform: scale(0.95); transition: transform 0.3s ease;
+        }
+        .modal-overlay.visible .modal-content { transform: scale(1); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .modal-title { font-size: 18px; font-weight: 700; }
+        .modal-close-btn { font-size: 24px; color: var(--text-secondary); cursor: pointer; border: none; background: none; }
+        .modal-body button.confirm-assignment, .modal-body button.complete-sale, .modal-body button.confirm-inventory-sale {
+            width: 100%; padding: 14px; border: none; border-radius: 12px;
+            color: white; font-weight: 700; font-size: 16px; cursor: pointer; margin-top: 16px;
+        }
+        .modal-body button.confirm-assignment, .modal-body button.complete-sale { background: var(--dark-green); }
+        .modal-body button.confirm-inventory-sale { background: var(--primary-blue); }
+        
+        .modal-body .add-item-btn { font-size: 13px; font-weight: 600; color: var(--primary-green); background: none; border: none; cursor: pointer; }
+        .modal-body .total-display { margin-top: 16px; padding-top: 16px; border-top: 1px solid #f1f5f9; text-align: right; }
+        .modal-body .total-display .label { font-size: 14px; color: var(--text-secondary); }
+        .modal-body .total-display .amount { font-size: 24px; font-weight: 800; }
+        #manual-entry-modal .total-display .amount { color: var(--dark-green); }
+        #sellInventoryModal .total-display .amount { color: var(--primary-blue); }
+        #sellInventoryModal #buyer-input { width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 16px; }
+        #sellInventoryModal .inventory-sale-item, #manual-entry-modal .inventory-sale-item { background: var(--background-dark); padding: 12px; border-radius: 12px; margin-bottom: 12px; }
+        #sellInventoryModal .item-inputs-grid, #manual-entry-modal .item-inputs-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 8px; }
+        #sellInventoryModal .item-inputs-grid input, #sellInventoryModal .item-inputs-grid select, #manual-entry-modal .item-inputs-grid input, #manual-entry-modal .item-inputs-grid select { width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; }
+        #manual-entry-modal .comment-input { width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; margin-top: 8px; font-size: 14px; }
+
+        .assign-collector-card { border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; margin-bottom: 12px; cursor: pointer; position: relative; }
+        .assign-collector-card.selected { border-color: var(--primary-green); background-color: #f0fdf4; }
+        .assign-collector-header { display: flex; align-items: center; gap: 12px; }
+        .assign-collector-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--background-dark); display: flex; align-items: center; justify-content: center; font-size: 20px; }
+        .assign-collector-info { flex-grow: 1; }
+        .assign-collector-name { font-weight: 700; }
+        .assign-collector-rating { font-size: 12px; color: var(--text-secondary); position: absolute; top: 12px; right: 12px; }
+        .assign-collector-status { background: #e5e7eb; color: var(--text-primary); padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; position: absolute; bottom: 12px; right: 12px;}
+        .assign-collector-details { font-size: 13px; color: var(--text-secondary); padding-top: 12px; margin-top: 12px; border-top: 1px solid #f1f5f9; }
+        .assign-collector-details p { margin-bottom: 4px; }
+        .assign-collector-details p strong { color: var(--text-primary); }
+
+    </style>
+</head>
+<body>
+    <div class="phone-container">
+
+        <!-- DASHBOARD PAGE -->
+        <div id="dashboard-page" class="page active">
+            <div class="main-content">
+                <div class="header">
+                    <div class="header-top">
+                        <div class="header-logo-section"><div class="app-title">🏪 B.B.P. Tracker</div><div class="role-badge">Junk Shop</div></div>
+                    </div>
+                </div>
+                <div class="welcome-section" style="padding-bottom: 16px;"><h1>Hi, Green Earth!</h1><p>Here's your business summary for today.</p></div>
+                
+                <div class="stats-grid" style="padding-top: 16px;">
+                    <div class="stat-card"><div class="stat-value">12</div><div class="stat-label">Today's Collections</div></div>
+                    <div class="stat-card"><div class="stat-value">8</div><div class="stat-label">Pending Pickups</div></div>
+                    <div class="stat-card"><div class="stat-value">3</div><div class="stat-label">Active Collectors</div></div>
+                </div>
+                <div class="section-title"><h3>Quick Actions</h3></div>
+                <div class="quick-actions-grid">
+                    <div class="quick-action-btn" onclick="navigateTo('inventory-page')"><div class="icon-wrapper">📦</div><span class="label">Inventory</span></div>
+                    <div class="quick-action-btn" onclick="navigateTo('collectors-page')"><div class="icon-wrapper">🚛</div><span class="label">Collectors</span></div>
+                    <div class="quick-action-btn" onclick="navigateTo('price-management-page')"><div class="icon-wrapper">💰</div><span class="label">Prices</span></div>
+                    <div class="quick-action-btn" onclick="navigateTo('history-page')"><div class="icon-wrapper">📜</div><span class="label">History</span></div>
+                </div>
+                <div id="active-collectors-section"></div>
+                <div class="section-title"><h3>New Posts</h3><span class="view-all" onclick="navigateTo('pickups-page')">View All</span></div>
+                <div id="dashboard-listings"></div>
+            </div>
+        </div>
+
+        <!-- PICKUPS PAGE -->
+        <div id="pickups-page" class="page">
+            <div class="header">
+                <div class="header-left">
+                    <div class="back-btn" onclick="navigateTo('dashboard-page')">←</div>
+                    <h1>Manage Pickups</h1>
+                </div>
+            </div>
+            <div class="main-content">
+                <div class="tab-nav">
+                    <div class="tab-item active" data-tab="new">New <div class="count-badge"></div></div>
+                    <div class="tab-item" data-tab="assigned">Assigned <div class="count-badge"></div></div>
+                    <div class="tab-item" data-tab="completed">Completed <div class="count-badge"></div></div>
+                </div>
+                <div id="tab-new" class="tab-content active"></div>
+                <div id="tab-assigned" class="tab-content">
+                    <div class="sub-tab-nav">
+                        <div class="sub-tab-item active" data-subtab="on-route">On Route</div>
+                        <div class="sub-tab-item" data-subtab="queued">Queued</div>
+                    </div>
+                    <div id="sub-tab-on-route" class="sub-tab-content active"></div>
+                    <div id="sub-tab-queued" class="sub-tab-content"></div>
+                </div>
+                <div id="tab-completed" class="tab-content"></div>
+            </div>
+        </div>
+        
+        <!-- PICKUP DETAILS PAGE -->
+        <div id="pickup-details-page" class="page">
+             <div class="header">
+                <div class="header-left">
+                    <div class="back-btn" onclick="navigateTo('pickups-page')">←</div>
+                    <h1 id="pickup-details-title"></h1>
+                </div>
+            </div>
+            <div class="main-content" id="pickup-details-content"></div>
+        </div>
+
+        <!-- COLLECTORS PAGE -->
+        <div id="collectors-page" class="page">
+             <div class="header">
+                <div class="header-left">
+                    <div class="back-btn" onclick="navigateTo('profile-page')">←</div>
+                    <h1>Manage Collectors</h1>
+                </div>
+            </div>
+            <div class="main-content" id="collectors-list"></div>
+        </div>
+        
+        <!-- COLLECTOR DETAILS PAGE -->
+        <div id="collector-details-page" class="page">
+            <div class="header">
+                <div class="header-left">
+                    <div class="back-btn" onclick="navigateTo('collectors-page')">←</div>
+                    <h1>Collector Profile</h1>
+                </div>
+                <div class="header-actions">
+                    <div class="more-btn" onclick="toggleCollectorMenu()">...</div>
+                    <div class="dropdown-menu" id="collector-dropdown">
+                        <div class="dropdown-item remove">Remove Collector</div>
+                    </div>
+                </div>
+            </div>
+            <div class="main-content" id="collector-details-content"></div>
+        </div>
+        
+        <!-- INVENTORY PAGE -->
+        <div id="inventory-page" class="page">
+            <div class="header">
+                <div class="header-left">
+                    <div class="back-btn" onclick="navigateTo('profile-page')">←</div>
+                    <h1>Inventory</h1>
+                </div>
+            </div>
+            <div class="main-content">
+                <div class="stats-grid" style="grid-template-columns: 1fr; padding-bottom: 16px;"><div class="stat-card"><div class="stat-icon">📦</div><div class="stat-value" id="inventory-total-value">₱5,200.50</div><div class="stat-label">Total Estimated Inventory Value</div></div></div>
+                <div style="padding: 0 24px 24px;">
+                    <button class="sell-inventory-btn" onclick="openSellModal()">💸 Sell Bulk Inventory</button>
+                </div>
+                <div class="section-title" style="padding: 0 24px 0;"><h3>Stock by Material</h3></div>
+                <div id="inventory-grid"></div>
+            </div>
+        </div>
+
+        <!-- PROFILE PAGE -->
+        <div id="profile-page" class="page">
+            <div class="header">
+                <div class="header-left">
+                    <div class="back-btn" onclick="navigateTo('dashboard-page')">←</div>
+                    <h1>Profile & Settings</h1>
+                </div>
+            </div>
+            <div class="main-content">
+                <div class="profile-header">
+                    <div class="profile-avatar-wrapper">
+                        <div class="profile-avatar">🏪</div>
+                        <div class="edit-avatar-btn">✏️</div>
+                    </div>
+                    <h2 class="profile-name">Green Earth Junk Shop</h2>
+                    <p style="font-size: 14px; color: var(--text-secondary);">Tagum City, Davao Region</p>
+                </div>
+                <div class="section-title" style="padding: 0;"><h3>Business Management</h3></div>
+                <div class="settings-list">
+                    <div class="setting-item" onclick="navigateTo('collectors-page')"><span class="icon">🚛</span> Manage Collectors <span class="arrow">></span></div>
+                    <div class="setting-item" onclick="navigateTo('inventory-page')"><span class="icon">📦</span> View Inventory <span class="arrow">></span></div>
+                    <div class="setting-item" onclick="navigateTo('price-management-page')"><span class="icon">💰</span> Manage Material Prices <span class="arrow">></span></div>
+                    <div class="setting-item" onclick="navigateTo('history-page')"><span class="icon">📜</span> Transaction History <span class="arrow">></span></div>
+                    <div class="setting-item" onclick="navigateTo('worker-applications-page')"><span class="icon">🧑‍🔧</span> Worker Applications <span class="arrow">></span></div>
+                    <div class="setting-item" onclick="navigateTo('business-reports-page')"><span class="icon">📈</span> Business Reports <span class="arrow">></span></div>
+                </div>
+                <div class="section-title" style="padding: 0; margin-top: 24px;"><h3>Settings</h3></div>
+                <div class="settings-list">
+                    <div class="setting-item" onclick="navigateTo('account-page')"><span class="icon">👤</span> Account <span class="arrow">></span></div>
+                    <div class="setting-item" onclick="navigateTo('notifications-page')"><span class="icon">🔔</span> Notifications <span class="arrow">></span></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- BUSINESS REPORTS PAGE -->
+        <div id="business-reports-page" class="page">
+            <div class="header">
+                <div class="header-left">
+                    <div class="back-btn" onclick="navigateTo('profile-page')">←</div>
+                    <h1>Business Reports</h1>
+                </div>
+            </div>
+            <div class="main-content">
+                <div class="report-card"><h3>Weekly Earnings</h3><div class="chart-placeholder">Chart Placeholder</div></div>
+                <div class="report-card"><h3>Top Materials (by Weight)</h3><div class="chart-placeholder">Bar Chart Placeholder</div></div>
+                <div class="report-card"><h3>Top Collector (by Earnings)</h3><p>Juan Santos - ₱1,250.00 this week</p></div>
+            </div>
+        </div>
+
+        <!-- ACCOUNT PAGE -->
+        <div id="account-page" class="page">
+            <div class="header">
+                <div class="header-left">
+                    <div class="back-btn" onclick="navigateTo('profile-page')">←</div>
+                    <h1>Account</h1>
+                </div>
+            </div>
+            <div class="main-content">
+                <div class="profile-form-container">
+                    <div class="form-header">
+                        <h2>Profile Information</h2>
+                        <button class="save-btn">Save</button>
+                    </div>
+                    <div class="form-group">
+                        <label for="shop-name">Name</label>
+                        <input type="text" id="shop-name" value="Green Earth Junk Shop">
+                    </div>
+                    <div class="form-group">
+                        <label for="shop-email">Email Address</label>
+                        <input type="email" id="shop-email" value="contact@greenearth.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="shop-phone">Phone Number</label>
+                        <input type="text" id="shop-phone" value="+639123456789">
+                    </div>
+                    <div class="form-group">
+                        <label for="shop-location">Location</label>
+                        <input type="text" id="shop-location" value="Tagum City, Davao Region">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PRICE MANAGEMENT PAGE -->
+        <div id="price-management-page" class="page">
+            <div class="header">
+                <div class="header-left">
+                    <div class="back-btn" onclick="navigateTo('profile-page')">←</div>
+                    <h1>Material Prices</h1>
+                </div>
+                <div class="header-actions">
+                    <button class="action-btn">Save</button>
+                </div>
+            </div>
+            <div class="main-content">
+                <div id="price-list-container"></div>
+                <button class="add-material-btn" onclick="addPriceListItem()">+ Add New Material</button>
+            </div>
+        </div>
+        
+        <!-- WORKER APPLICATIONS PAGE -->
+        <div id="worker-applications-page" class="page">
+            <div class="header">
+                <div class="header-left">
+                    <div class="back-btn" onclick="navigateTo('profile-page')">←</div>
+                    <h1>Worker Applications</h1>
+                </div>
+            </div>
+            <div class="main-content" id="applications-list-container"></div>
+        </div>
+
+        <!-- HISTORY PAGE -->
+        <div id="history-page" class="page">
+            <div class="header">
+                <div class="header-left">
+                    <div class="back-btn" onclick="navigateTo('profile-page')">←</div>
+                    <h1>Transaction History</h1>
+                </div>
+            </div>
+            <div class="main-content">
+                <div class="tab-nav">
+                    <div class="tab-item active" data-tab="history-purchases">Purchases</div>
+                    <div class="tab-item" data-tab="history-sales">Sales</div>
+                </div>
+                <div id="tab-history-purchases" class="tab-content active"></div>
+                <div id="tab-history-sales" class="tab-content"></div>
+            </div>
+        </div>
+
+        <!-- NOTIFICATIONS PAGE -->
+        <div id="notifications-page" class="page">
+            <div class="header">
+                <div class="header-left">
+                    <div class="back-btn" onclick="navigateTo('profile-page')">←</div>
+                    <h1>Notifications</h1>
+                </div>
+            </div>
+            <div class="main-content" id="notifications-list-container"></div>
+        </div>
+
+        <!-- CHAT LIST PAGE -->
+        <div id="chat-list-page" class="page">
+            <div class="header">
+                <div class="header-left">
+                    <div class="back-btn" onclick="navigateTo('dashboard-page')">←</div>
+                    <h1>Messages</h1>
+                </div>
+                 <div class="header-actions">
+                    <div class="icon-btn" onclick="navigateTo('new-chat-page')">➕</div>
+                </div>
+            </div>
+            <div class="main-content" id="chat-list-container"></div>
+        </div>
+        
+        <!-- NEW CHAT PAGE -->
+        <div id="new-chat-page" class="page">
+            <div class="header">
+                <div class="header-left">
+                    <div class="back-btn" onclick="navigateTo('chat-list-page')">←</div>
+                    <h1>New Conversation</h1>
+                </div>
+            </div>
+            <div class="main-content">
+                <div class="search-bar-container">
+                    <input type="search" id="user-search-input" placeholder="Search for a user...">
+                </div>
+                <div id="user-directory-list"></div>
+            </div>
+        </div>
+        
+        <!-- CONVERSATION PAGE -->
+        <div id="conversation-page" class="page">
+             <div class="header">
+                <div class="header-left">
+                    <div class="back-btn" onclick="navigateTo('chat-list-page')">←</div>
+                    <h1 id="conversation-title"></h1>
+                </div>
+            </div>
+            <div class="main-content"><div class="chat-container" id="chat-container"></div></div>
+            <div class="chat-input-area"><div class="chat-input-container"><input type="text" id="chat-input" placeholder="Type a message..."><button id="send-btn">➤</button></div></div>
+        </div>
+
+        <!-- SHARED BOTTOM NAVIGATION -->
+        <div class="bottom-nav">
+            <div class="nav-items">
+                <div class="nav-item active" id="nav-home" onclick="navigateTo('dashboard-page')">
+                    <div class="nav-icon">
+                        <svg class="icon-outline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h7.5" /></svg>
+                        <svg class="icon-filled" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M11.47 3.84a.75.75 0 011.06 0l8.69 8.69a.75.75 0 101.06-1.06l-8.689-8.69a2.25 2.25 0 00-3.182 0l-8.69 8.69a.75.75 0 001.061 1.06l8.69-8.69z" /><path d="M12 5.432l8.159 8.159c.026.026.05.054.07.084v6.101A2.25 2.25 0 0117.75 22H6.25a2.25 2.25 0 01-2.25-2.25V13.675a2.25 2.25 0 01.071-.513L12 5.432z" /></svg>
+                    </div>
+                    Home
+                </div>
+                <div class="nav-item" id="nav-pickups" onclick="navigateTo('pickups-page')">
+                    <div class="nav-icon">
+                         <svg class="icon-outline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" /></svg>
+                        <svg class="icon-filled" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M3.375 3C2.339 3 1.5 3.84 1.5 4.875v.75c0 1.036.84 1.875 1.875 1.875h17.25c1.035 0 1.875-.84 1.875-1.875v-.75C22.5 3.839 21.66 3 20.625 3H3.375z" /><path fill-rule="evenodd" d="M3.087 9l.54 9.176A3 3 0 006.62 21h10.757a3 3 0 002.995-2.824L20.913 9H3.087zm6.163 3.75A.75.75 0 0110 12h4a.75.75 0 010 1.5h-4a.75.75 0 01-.75-.75z" clip-rule="evenodd" /></svg>
+                    </div>
+                    Pickups
+                </div>
+                <div class="nav-item-post" onclick="openManualEntryModal()">
+                    <div class="post-btn-inner">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                    </div>
+                    <span>Cashier</span>
+                </div>
+                <div class="nav-item" id="nav-messages" onclick="navigateTo('chat-list-page')">
+                    <div class="nav-icon">
+                        <svg class="icon-outline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" /></svg>
+                        <svg class="icon-filled" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M4.804 21.644A6.707 6.707 0 006 21.75a6.721 6.721 0 003.583-1.029c.774.182 1.584.279 2.417.279 5.252 0 9.75-3.694 9.75-8.25s-4.498-8.25-9.75-8.25S2.25 7.444 2.25 12c0 2.102.99 4.02 2.625 5.402a.75.75 0 01.284.656l-.328 3.281a.75.75 0 001.002.805l3.25-1.625a.75.75 0 01.423-.128zM12 13.5a.75.75 0 000-1.5H8.25a.75.75 0 000 1.5H12zm3.75-1.5a.75.75 0 01-.75.75H12a.75.75 0 010-1.5h3a.75.75 0 01.75.75z" clip-rule="evenodd" /></svg>
+                    </div>
+                    Messages
+                </div>
+                <div class="nav-item" id="nav-profile" onclick="navigateTo('profile-page')">
+                    <div class="nav-icon">
+                         <svg class="icon-outline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
+                         <svg class="icon-filled" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clip-rule="evenodd" /></svg>
+                    </div>
+                    Profile
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALS -->
+    <div class="modal-overlay" id="assignCollectorModal">
+        <div class="modal-content"><div class="modal-header"><h3 class="modal-title">Assign Collector</h3><button class="modal-close-btn">&times;</button></div><div class="modal-body" id="assignModalBody"><button class="confirm-assignment">Confirm Assignment</button></div></div>
+    </div>
+    <div class="modal-overlay" id="manual-entry-modal">
+        <div class="modal-content">
+            <div class="modal-header"><h3 class="modal-title">🛒 Manual Payout</h3><button class="modal-close-btn">&times;</button></div>
+            <div class="modal-body">
+                <div id="manual-items-container"></div>
+                <button class="add-item-btn" onclick="addManualItem()">+ Add Another Item</button>
+                <div class="total-display">
+                    <div class="label">TOTAL PAYOUT</div>
+                    <div class="amount" id="manual-total">₱0.00</div>
+                </div>
+                <button class="complete-sale">Confirm Payout</button>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="settleArrivalModal">
+        <div class="modal-content"><div class="modal-header"><h3 class="modal-title">Settle Arrival</h3><button class="modal-close-btn">&times;</button></div><div class="modal-body"><p>Items from <strong id="settle-collector-name"></strong> have been weighed and added to inventory.</p><div class="total-display" style="border-top:none; margin-top:0; padding-top:12px;"><div class="label">PAYOUT AMOUNT</div><div class="amount" id="settle-payout-amount" style="color:var(--dark-green)">₱185.50</div></div><button class="complete-sale">Confirm Payout</button></div></div>
+    </div>
+    <div class="modal-overlay" id="sellInventoryModal">
+        <div class="modal-content"><div class="modal-header"><h3 class="modal-title">💸 Sell Bulk Inventory</h3><button class="modal-close-btn">&times;</button></div><div class="modal-body"><input type="text" id="buyer-input" placeholder="Buyer Name (e.g., Central Recycling Co.)"><div id="inventory-sale-items-container"></div><button class="add-item-btn" onclick="addInventorySaleItem()">+ Add Item to Sale</button><div class="total-display"><div class="label">TOTAL SALE</div><div class="amount" id="inventory-sale-total">₱0.00</div></div><button class="confirm-inventory-sale">Confirm Sale</button></div></div>
+    </div>
+
+    <script>
+        // --- MOCK DATA (Junk Shop Perspective) ---
+        const mockIncomingListings = {
+            new: [
+                { id: 101, household: 'Maria C.', distance: '1.2 km', value: 120.50, items: [{ name: 'Plastic Bottles', weight: '2.3 kg' }, { name: 'Aluminum Cans', weight: '1.8 kg' }], location: '123 Green St, Tagum City', icon: '♻️', status: 'new', image: 'https://placehold.co/600x400/3B82F6/white?text=Waste+Photo', availability: [true, true, false, true, true, false, true] },
+                { id: 102, household: 'John D.', distance: '2.5 km', value: 85.00, items: [{ name: 'Cardboard Boxes', weight: '5.0 kg' }], location: '456 Eco Ave, Tagum City', icon: '📦', status: 'new', image: 'https://placehold.co/600x400/F59E0B/white?text=Waste+Photo', availability: [false, true, true, true, false, true, true] },
+            ],
+            assigned: [ 
+                { id: 103, household: 'Anna B.', distance: '3.1 km', value: 250.00, collector: 'Pedro L.', items: [{ name: 'Old Monitor', weight: '4.0 kg' }], location: '789 Tech Rd, Tagum City', icon: '🔌', status: 'assigned', sub_status: 'on_route', image: 'https://placehold.co/600x400/EF4444/white?text=Waste+Photo' },
+                { id: 105, household: 'Luis M.', distance: '4.5 km', value: 180.00, collector: 'Juan Santos', items: [{ name: 'Scrap Metal', weight: '15.0 kg' }], location: '321 Metalworks, Tagum', icon: '🔩', status: 'assigned', sub_status: 'queued', image: 'https://placehold.co/600x400/64748B/white?text=Waste+Photo' },
+             ],
+            completed: Array.from({ length: 21 }, (v, i) => ({ id: 200 + i, household: 'Peter S.', distance: '0.8 km', value: 75.00, collector: 'Pedro L.', items: [{ name: 'Glass Bottles', weight: '10.0 kg' }], location: '101 Recycle Way, Tagum City', icon: '🍾', status: 'completed', image: 'https://placehold.co/600x400/10B981/white?text=Waste+Photo' }))
+        };
+        const mockCollectors = [
+            { id: 1, name: 'Juan Santos', status: 'Idle', collectionsToday: 5, rating: 4.9, avatar: '🧑', totalCollections: 215, totalWeight: 1200.5, assignedTasks: 1, location: 'Central, Tagum' },
+            { id: 2, name: 'Pedro L.', status: 'On Route', collectionsToday: 8, rating: 4.7, avatar: '👨‍🦱', totalCollections: 180, totalWeight: 950.2, currentRouteId: 103, assignedTasks: 1, location: 'Apokon, Tagum' },
+            { id: 3, name: 'Maria C.', status: 'Arrived', collectionsToday: 3, rating: 4.8, avatar: '👩', totalCollections: 250, totalWeight: 1500.0, assignedTasks: 0, location: 'Madaum, Tagum' },
+            { id: 4, name: 'Jose R.', status: 'Offline', collectionsToday: 0, rating: 4.5, avatar: '👨‍🦳', totalCollections: 150, totalWeight: 800.7, assignedTasks: 0, location: 'Visayan Village, Tagum' },
+        ];
+        let mockMaterials = [
+            { id: 1, name: 'Plastic Bottles (PET)', price: 15, unit: 'kg', icon: '🧴', stock: 150.5 }, 
+            { id: 2, name: 'Aluminum Cans', price: 35, unit: 'kg', icon: '🥫', stock: 55.5 },
+            { id: 3, name: 'Cardboard', price: 5, unit: 'kg', icon: '📦', stock: 210.0 }, 
+            { id: 4, name: 'Newspaper / Paper', price: 4, unit: 'kg', icon: '📄', stock: 180.5 },
+            { id: 5, name: 'Glass Bottles', price: 2, unit: 'kg', icon: '🍾', stock: 95.0 }, 
+            { id: 6, name: 'Copper Wire', price: 350, unit: 'kg', icon: '🔩', stock: 15.2 },
+            { id: 7, name: 'E-Waste (Mixed)', price: 10, unit: 'kg', icon: '🔌', stock: 41.0 },
+        ];
+        const mockApplications = [
+            { id: 201, name: 'Andres Bonifacio', experience: '3 years', preferredArea: 'Tagum City Center', avatar: '👨‍🌾' },
+            { id: 202, name: 'Gabriela Silang', experience: '1 year', preferredArea: 'Apokon, Tagum', avatar: '👩‍🌾' },
+        ];
+        const mockChats = [
+            { id: 301, name: 'Maria C.', preview: "What's your rate for aluminum cans?", time: '10:42 AM', unread: 2, avatar: '👩', role: 'Household', isActive: true },
+            { id: 302, name: 'John D.', preview: 'Can you pick up tomorrow instead?', time: 'Yesterday', unread: 0, avatar: '👨', role: 'Household', isActive: false },
+            { id: 303, name: 'Juan Santos', preview: 'Okay, I\'m on my way now.', time: '2d ago', unread: 0, avatar: '🧑', role: 'Collector', isActive: true },
+        ];
+        const mockHistory = {
+            purchases: [
+                { id: 401, type: 'On-site', details: 'Walk-in Seller', amount: 150.00, date: '2025-07-25' },
+                { id: 104, type: 'Pickup', details: 'From Peter S.', amount: 75.00, date: '2025-07-24' },
+            ],
+            sales: [
+                { id: 501, type: 'Bulk Sale', details: 'To Central Recycling Co.', amount: 3250.00, date: '2025-07-22' }
+            ]
+        };
+        const mockNotifications = [
+            { type: 'new-request', text: 'New collection request from <strong>Maria C.</strong>', time: '5m ago', unread: true },
+            { type: 'completed', text: '<strong>Juan Santos</strong> has completed a pickup from Anna B.', time: '1h ago', unread: true },
+            { type: 'application', text: 'New worker application from <strong>Andres Bonifacio</strong>.', time: '3h ago', unread: false },
+        ];
+
+        // --- NAVIGATION LOGIC ---
+        const bottomNav = document.querySelector('.bottom-nav');
+        function navigateTo(pageId) {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            updateBottomNav(pageId);
+            const pagesWithoutNav = ['pickup-details-page', 'price-management-page', 'worker-applications-page', 'conversation-page', 'history-page', 'notifications-page', 'collector-details-page', 'business-reports-page', 'account-page', 'new-chat-page'];
+            bottomNav.classList.toggle('hidden', pagesWithoutNav.includes(pageId));
+        }
+
+        function updateBottomNav(pageId) {
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            let navId;
+            if (['dashboard-page'].includes(pageId)) navId = 'home';
+            else if (['pickups-page', 'pickup-details-page'].includes(pageId)) navId = 'pickups';
+            else if (['chat-list-page', 'conversation-page', 'new-chat-page'].includes(pageId)) navId = 'messages';
+            else if (['profile-page', 'price-management-page', 'worker-applications-page', 'history-page', 'notifications-page', 'collectors-page', 'collector-details-page', 'inventory-page', 'business-reports-page', 'account-page'].includes(pageId)) navId = 'profile';
+            
+            if (navId) {
+                const navItem = document.getElementById(`nav-${navId}`);
+                if (navItem) navItem.classList.add('active');
+            }
+        }
+
+        // --- RENDERING FUNCTIONS ---
+        function renderDashboard() {
+            renderDashboardListings();
+            renderActiveCollectors();
+        }
+
+        function renderDashboardListings() {
+            const container = document.getElementById('dashboard-listings');
+            container.innerHTML = '';
+            mockIncomingListings.new.slice(0, 3).forEach(listing => { container.innerHTML += createListingCard(listing); });
+        }
+        
+        function renderActiveCollectors() {
+            const container = document.getElementById('active-collectors-section');
+            container.innerHTML = '';
+            const onRouteCollectors = mockCollectors.filter(c => c.status === 'On Route');
+            if (onRouteCollectors.length > 0) {
+                container.innerHTML += `<div class="section-title"><h3>Collectors on Route</h3></div>`;
+                onRouteCollectors.forEach(collector => {
+                    container.innerHTML += `<div class="listing-card" onclick="viewCollectorDetails(${collector.id})">
+                        <div class="listing-icon">${collector.avatar}</div>
+                        <div class="listing-details">
+                            <h4>${collector.name}</h4>
+                            <p>Currently on a collection route.</p>
+                        </div>
+                        <div class="collector-status status-on-route">On Route</div>
+                    </div>`;
+                });
+            }
+        }
+        
+        function confirmArrival(collectorId) {
+            const collector = mockCollectors.find(c => c.id === collectorId);
+            if (collector) collector.status = 'Idle';
+            renderActiveCollectors();
+        }
+
+        function createListingCard(listing) {
+            return `<div class="listing-card" onclick='viewPickupDetails(${JSON.stringify(listing)}, "new")'><div class="listing-icon">${listing.icon}</div><div class="listing-details"><h4>From ${listing.household}</h4><p>${listing.items.map(i => i.name).join(', ')}</p><div class="listing-footer"><div class="listing-value">Est. ₱${listing.value.toFixed(2)}</div><div class="listing-distance">${listing.distance} away</div></div></div></div>`;
+        }
+        
+        function updatePickupCounts() {
+            const newCount = mockIncomingListings.new.length;
+            const assignedCount = mockIncomingListings.assigned.length;
+            const completedCount = mockIncomingListings.completed.length;
+
+            document.querySelector('.tab-item[data-tab="new"] .count-badge').textContent = newCount > 9 ? '9+' : newCount;
+            document.querySelector('.tab-item[data-tab="assigned"] .count-badge').textContent = assignedCount > 9 ? '9+' : assignedCount;
+            document.querySelector('.tab-item[data-tab="completed"] .count-badge').textContent = completedCount > 9 ? '9+' : completedCount;
+        }
+
+        function renderAllPickups() {
+            updatePickupCounts();
+            document.getElementById('tab-new').innerHTML = mockIncomingListings.new.map(l => createListingCard(l)).join('');
+            
+            const onRouteContainer = document.getElementById('sub-tab-on-route');
+            const queuedContainer = document.getElementById('sub-tab-queued');
+            onRouteContainer.innerHTML = '';
+            queuedContainer.innerHTML = '';
+
+            mockIncomingListings.assigned.forEach(l => {
+                if (l.sub_status === 'on_route') {
+                    onRouteContainer.innerHTML += createAssignedCard(l);
+                } else {
+                    queuedContainer.innerHTML += createAssignedCard(l);
+                }
+            });
+
+            document.getElementById('tab-completed').innerHTML = mockIncomingListings.completed.map(l => createCompletedCard(l)).join('');
+        }
+        
+        function createAssignedCard(listing) {
+            const statusText = listing.sub_status === 'on_route' ? 'On Route' : 'Queued';
+            const statusClass = listing.sub_status === 'on_route' ? 'status-on-route' : 'status-idle';
+            return `<div class="listing-card" onclick='viewPickupDetails(${JSON.stringify(listing)}, "assigned")'>
+                <div class="listing-icon">${listing.icon}</div>
+                <div class="listing-details">
+                    <h4>To: ${listing.household}</h4>
+                    <p>Assigned to: <strong>${listing.collector}</strong></p>
+                    <div class="listing-footer">
+                        <div class="listing-value">Est. ₱${listing.value.toFixed(2)}</div>
+                        <div class="collector-status ${statusClass}">${statusText}</div>
+                    </div>
+                </div>
+            </div>`;
+        }
+
+        function createCompletedCard(listing) {
+            return `<div class="listing-card" onclick='viewPickupDetails(${JSON.stringify(listing)}, "completed")'>
+                <div class="listing-icon">${listing.icon}</div>
+                <div class="listing-details">
+                    <h4>From: ${listing.household}</h4>
+                    <p>Collected by: <strong>${listing.collector}</strong></p>
+                    <div class="listing-footer">
+                        <div class="listing-value" style="color: var(--success-color);">Paid: ₱${listing.value.toFixed(2)}</div>
+                        <div class="collector-status" style="background-color: #e5e7eb; color: #6b7280;">Completed</div>
+                    </div>
+                </div>
+            </div>`;
+        }
+        
+        function generateAvailabilityCalendar(availability) {
+            let calendarHTML = '<div class="details-card"><h3>Household Availability</h3><div class="availability-calendar">';
+            const today = new Date();
+            const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+            for (let i = 0; i < 7; i++) {
+                const date = new Date(today);
+                date.setDate(today.getDate() + i);
+                const dayName = daysOfWeek[date.getDay()];
+                const dayOfMonth = date.getDate();
+                const isAvailable = availability[i];
+                const isToday = i === 0;
+                
+                calendarHTML += `
+                    <div class="day-item ${isAvailable ? 'available' : 'unavailable'} ${isToday ? 'current-day' : ''}">
+                        <div class="day-name">${dayName}</div>
+                        <div class="day-date">${dayOfMonth}</div>
+                        ${isAvailable ? '<div class="day-time">9AM-5PM</div>' : ''}
+                    </div>
+                `;
+            }
+            calendarHTML += '</div></div>';
+            return calendarHTML;
+        }
+
+
+        function viewPickupDetails(listing, status) {
+            if (!listing) return;
+
+            const titleEl = document.getElementById('pickup-details-title');
+            const contentEl = document.getElementById('pickup-details-content');
+            let contentHTML = '';
+
+            if (status === 'new') {
+                titleEl.textContent = 'Pickup Details';
+                const escapedName = listing.household.replace(/'/g, "\\'");
+                const calendarHTML = generateAvailabilityCalendar(listing.availability);
+                contentHTML = `<div class="details-content-container" style="transform: none; padding-top: 0;">
+                <div class="waste-image-full" style="background-image: url('${listing.image}')"></div>
+                ${calendarHTML}
+                <div class="details-card"><h3>Household & Location</h3><div class="detail-row"><span class="label">From</span><span class="value">${listing.household}</span></div><div class="detail-row"><span class="label">Address</span><span class="value">${listing.location}</span></div></div><div class="details-card"><h3>Waste Details</h3><div id="item-list">${listing.items.map(item => `<div class="item-entry"><span class="item-name">${item.name}</span><span class="item-weight">${item.weight}</span></div>`).join('')}</div><div class="detail-row" style="border-top: 1px solid #f1f5f9; margin-top: 8px; font-weight: 800; color: var(--dark-green);"><span class="label">Est. Value</span><span class="value">₱${listing.value.toFixed(2)}</span></div></div><div class="action-buttons"><button class="message-btn" onclick="openConversation('${escapedName}')">Message</button><button class="assign-btn" onclick='openAssignModal(${JSON.stringify(listing)})'>Assign Collector</button></div></div>`;
+            } else if (status === 'assigned') {
+                titleEl.textContent = 'Live Tracking';
+                contentHTML = `<div class="map-container"></div><div class="details-content-container"><div class="details-card"><h3>Collection Info</h3><div class="detail-row"><span class="label">To</span><span class="value">${listing.household}</span></div><div class="detail-row"><span class="label">Collector</span><span class="value">${listing.collector}</span></div><div class="detail-row"><span class="label">Status</span><span class="value"><span class="collector-status status-on-route">On Route</span></span></div></div></div>`;
+            } else if (status === 'completed') {
+                titleEl.textContent = 'Collection Summary';
+                contentHTML = `<div class="details-content-container" style="transform: none; padding-top: 0;"><div class="waste-image-full" style="background-image: url('${listing.image}')"></div><div class="details-card"><h3>Collection Info</h3><div class="detail-row"><span class="label">From</span><span class="value">${listing.household}</span></div><div class="detail-row"><span class="label">Collector</span><span class="value">${listing.collector}</span></div></div><div class="details-card"><h3>Final Payout</h3><div class="detail-row"><span class="label">Final Amount</span><span class="value" style="color: var(--success-color); font-weight: 800;">₱${listing.value.toFixed(2)}</span></div></div></div>`;
+            }
+            contentEl.innerHTML = contentHTML;
+            navigateTo('pickup-details-page');
+        }
+
+        function renderCollectors() {
+            const container = document.getElementById('collectors-list');
+            container.innerHTML = '';
+            mockCollectors.forEach(c => {
+                const statusClass = `status-${c.status.toLowerCase().replace(/ /g, '-')}`;
+                container.innerHTML += `<div class="collector-card" onclick="viewCollectorDetails(${c.id})"><div class="collector-avatar">${c.avatar}</div><div class="collector-info"><div class="collector-name">${c.name}</div><p class="collector-stats">⭐ ${c.rating} | ${c.collectionsToday} collections today</p></div><div class="collector-status ${statusClass}">${c.status}</div></div>`;
+            });
+        }
+        
+        function viewCollectorDetails(collectorId) {
+            const collector = mockCollectors.find(c => c.id === collectorId);
+            if (!collector) return;
+            const currentRoute = mockIncomingListings.assigned.find(r => r.id === collector.currentRouteId);
+
+            let onRouteHTML = '';
+            if (collector.status === 'On Route' && currentRoute) {
+                onRouteHTML = `
+                <div class="live-route-card">
+                    <h3>Currently on Route</h3>
+                    <div class="detail-row">
+                        <span class="label">Destination</span>
+                        <span class="value">${currentRoute.household}</span>
+                    </div>
+                     <div class="detail-row">
+                        <span class="label">Address</span>
+                        <span class="value">${currentRoute.location}</span>
+                    </div>
+                    <div class="route-actions">
+                        <button class="message-btn" onclick="openConversation('${collector.name}')">💬 Message</button>
+                        <button class="view-route-btn" onclick='viewPickupDetails(${JSON.stringify(currentRoute)}, "assigned")'>🗺️ View Live Route</button>
+                    </div>
+                </div>
+                `;
+            }
+            
+            const contentEl = document.getElementById('collector-details-content');
+            contentEl.innerHTML = `
+                <div class="profile-header">
+                    <div class="profile-avatar">${collector.avatar}</div>
+                    <h2 class="profile-name">${collector.name}</h2>
+                    <div class="collector-status status-${collector.status.toLowerCase().replace(/ /g, '-')}">${collector.status}</div>
+                </div>
+                ${onRouteHTML}
+                <div class="performance-stats">
+                    <div class="stat-item"><div class="stat-value">⭐ ${collector.rating}</div><div class="stat-label">Avg. Rating</div></div>
+                    <div class="stat-item"><div class="stat-value">${collector.totalCollections}</div><div class="stat-label">Total Collections</div></div>
+                    <div class="stat-item"><div class="stat-value">${(collector.totalWeight / 1000).toFixed(2)} T</div><div class="stat-label">Total Weight</div></div>
+                </div>
+                <div class="section-title"><h3>Recent Activity</h3></div>
+                <div id="collector-history-list" style="padding: 0 24px;"></div>
+            `;
+            
+            const historyListEl = contentEl.querySelector('#collector-history-list');
+            mockIncomingListings.completed.slice(0, 2).forEach(item => {
+                historyListEl.innerHTML += `<div class="listing-card" style="margin: 0 0 12px 0;"><div class="listing-icon">${item.icon}</div><div class="listing-details"><h4>From ${item.household}</h4><p>${item.location}</p><div class="listing-footer"><div class="listing-value" style="color: var(--success-color)">₱${item.value.toFixed(2)}</div><div class="listing-distance">Completed</div></div></div></div>`;
+            });
+            
+            navigateTo('collector-details-page');
+        }
+
+        function renderPriceList() {
+            const container = document.getElementById('price-list-container');
+            container.innerHTML = '';
+            mockMaterials.forEach(material => {
+                container.innerHTML += `
+                <div class="price-list-item" id="price-item-${material.id}">
+                    <input type="text" class="price-input" value="${material.name}" style="font-weight: 600;">
+                    <div class="price-input-group">
+                         <input type="number" class="price-input price-value-input" value="${material.price.toFixed(2)}" step="0.01" placeholder="Price">
+                        <select class="unit-select">
+                            <option value="kg" ${material.unit === 'kg' ? 'selected' : ''}>kg</option>
+                            <option value="pc" ${material.unit === 'pc' ? 'selected' : ''}>pc</option>
+                            <option value="dozen" ${material.unit === 'dozen' ? 'selected' : ''}>dozen</option>
+                        </select>
+                    </div>
+                </div>`;
+            });
+        }
+        
+        function addPriceListItem() {
+            const container = document.getElementById('price-list-container');
+            const newItem = document.createElement('div');
+            newItem.className = 'price-list-item';
+            newItem.innerHTML = `
+                <input type="text" class="price-input" placeholder="Material Name" style="font-weight: 600;">
+                <div class="price-input-group">
+                    <input type="number" class="price-input price-value-input" step="0.01" placeholder="Price">
+                    <select class="unit-select">
+                        <option value="kg">kg</option>
+                        <option value="pc">pc</option>
+                        <option value="dozen">dozen</option>
+                    </select>
+                </div>
+            `;
+            container.appendChild(newItem);
+        }
+
+        function renderInventoryStock() {
+            const gridContainer = document.getElementById('inventory-grid');
+            gridContainer.innerHTML = '';
+            
+            const totalStockValue = mockMaterials.reduce((sum, item) => sum + (item.stock * item.price), 0);
+            document.getElementById('inventory-total-value').textContent = `₱${totalStockValue.toFixed(2)}`;
+
+            mockMaterials.forEach(material => {
+                const materialValue = material.stock * material.price;
+                const progress = totalStockValue > 0 ? (materialValue / totalStockValue) * 100 : 0;
+                
+                gridContainer.innerHTML += `<div class="inventory-card"><div class="progress-circle" style="--progress: ${progress}%"><div class="icon">${material.icon}</div></div><div class="material-name">${material.name}</div><div class="stock-weight">${material.stock.toFixed(1)} kg</div><div class="stock-value">~ ₱${materialValue.toFixed(2)}</div></div>`;
+            });
+        }
+
+        function renderApplications() {
+            const container = document.getElementById('applications-list-container');
+            container.innerHTML = '';
+            if (mockApplications.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 40px 0;">No pending applications.</p>';
+                return;
+            }
+            mockApplications.forEach(app => {
+                container.innerHTML += `<div class="application-card" id="app-card-${app.id}"><div class="application-header"><div class="collector-avatar">${app.avatar}</div><div class="collector-info"><div class="collector-name">${app.name}</div><p class="collector-stats">${app.experience} experience</p></div></div><div class="detail-row"><span class="label">Preferred Area</span><span class="value">${app.preferredArea}</span></div><div class="application-actions"><button class="reject-btn" style="flex:1; padding: 12px;" onclick="handleApplication(${app.id}, false)">Reject</button><button class="assign-btn" style="flex:1; padding: 12px;" onclick="handleApplication(${app.id}, true)">Approve</button></div></div>`;
+            });
+        }
+        
+        function handleApplication(appId, isApproved) {
+            const card = document.getElementById(`app-card-${appId}`);
+            const appIndex = mockApplications.findIndex(a => a.id === appId);
+            if (appIndex > -1) mockApplications.splice(appIndex, 1);
+            card.style.transition = 'opacity 0.5s'; card.style.opacity = '0';
+            setTimeout(() => {
+                card.remove();
+                if (document.getElementById('applications-list-container').children.length === 0) renderApplications();
+            }, 500);
+        }
+
+        function renderChatList() {
+            const container = document.getElementById('chat-list-container');
+            container.innerHTML = '';
+            mockChats.forEach(chat => {
+                const escapedName = chat.name.replace(/'/g, "\\'");
+                container.innerHTML += `
+                <div class="chat-list-item" onclick="openConversation('${escapedName}')">
+                    <div class="chat-avatar">
+                        ${chat.avatar}
+                        ${chat.isActive ? '<div class="active-dot"></div>' : ''}
+                    </div>
+                    <div class="chat-info">
+                        <div class="chat-name-row">
+                           <div class="chat-name">${chat.name}</div>
+                           <div class="chat-role">(${chat.role})</div>
+                        </div>
+                        <div class="chat-preview">${chat.preview}</div>
+                    </div>
+                    <div class="chat-meta">
+                        <div class="chat-time">${chat.time}</div>
+                        ${chat.unread > 0 ? `<div class="unread-dot">${chat.unread}</div>` : ''}
+                    </div>
+                </div>`;
+            });
+        }
+
+        function openConversation(name) {
+            navigateTo('conversation-page');
+            document.getElementById('conversation-title').textContent = name;
+            document.getElementById('chat-container').innerHTML = `<div class="message-wrapper contact-message-wrapper"><div class="chat-message contact-message">Hi! What are your current rates for aluminum cans?</div><div class="message-time">10:42 AM</div></div><div class="message-wrapper user-message-wrapper"><div class="chat-message user-message">Hello! Our current rate for aluminum cans is ₱35.00/kg.</div><div class="message-time">10:43 AM</div></div>`;
+        }
+        
+        function renderHistory() {
+            const purchasesContainer = document.getElementById('tab-history-purchases');
+            purchasesContainer.innerHTML = '';
+            mockHistory.purchases.forEach(item => {
+                purchasesContainer.innerHTML += `<div class="transaction-item"><div class="transaction-icon">🛒</div><div class="transaction-details"><h4>${item.type} Purchase</h4><p>${item.details}</p></div><div class="transaction-amount purchase">- ₱${item.amount.toFixed(2)}</div></div>`;
+            });
+            const salesContainer = document.getElementById('tab-history-sales');
+            salesContainer.innerHTML = '';
+            mockHistory.sales.forEach(item => {
+                salesContainer.innerHTML += `<div class="transaction-item"><div class="transaction-icon">💸</div><div class="transaction-details"><h4>${item.type}</h4><p>${item.details}</p></div><div class="transaction-amount sale">+ ₱${item.amount.toFixed(2)}</div></div>`;
+            });
+        }
+        
+        function renderNotifications() {
+            const container = document.getElementById('notifications-list-container');
+            container.innerHTML = '';
+            const iconMap = { 'new-request': '📥', 'completed': '✅', 'application': '🧑‍🔧' };
+            mockNotifications.forEach(item => {
+                const icon = iconMap[item.type] || '🔔';
+                container.innerHTML += `<div class="notification-item ${item.unread ? 'unread' : ''}"><div class="notification-icon ${item.type}">${icon}</div><div class="notification-details"><p>${item.text}</p><div class="time">${item.time}</div></div></div>`;
+            });
+        }
+
+        // --- MODAL LOGIC ---
+        function setupModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal || e.target.classList.contains('modal-close-btn') || e.target.classList.contains('confirm-inventory-sale') || e.target.classList.contains('complete-sale')) {
+                    modal.classList.remove('visible');
+                }
+            });
+            return modal;
+        }
+        const assignModal = setupModal('assignCollectorModal');
+        const manualEntryModal = setupModal('manual-entry-modal');
+        const sellInventoryModal = setupModal('sellInventoryModal');
+        const settleArrivalModal = setupModal('settleArrivalModal');
+
+        function openSettleModal(collectorName) {
+            document.getElementById('settle-collector-name').textContent = collectorName;
+            settleArrivalModal.classList.add('visible');
+        }
+
+        function openAssignModal(listing) {
+            const modalBody = document.getElementById('assignModalBody');
+            let collectorsHtml = '';
+            mockCollectors.forEach(c => {
+                 const distance = (Math.random() * 5 + 1).toFixed(1);
+                 const eta = Math.floor(distance * 5 + 3);
+                 collectorsHtml += `<div class="assign-collector-card" data-collector-id="${c.id}" onclick="selectCollector(this)">
+                    <div class="assign-collector-header">
+                        <div class="assign-collector-avatar">${c.avatar}</div>
+                        <div class="assign-collector-info">
+                            <div class="assign-collector-name">${c.name}</div>
+                            <p style="font-size: 12px; color: var(--text-secondary);">${c.location} • ${distance} km away</p>
+                        </div>
+                         <div class="assign-collector-rating">⭐ ${c.rating}</div>
+                    </div>
+                    <div class="assign-collector-details">
+                        <p>ETA: <strong>~${eta} mins</strong></p>
+                    </div>
+                    <div class="assign-collector-status">${c.assignedTasks}</div>
+                 </div>`;
+            });
+            modalBody.innerHTML = collectorsHtml + '<button class="confirm-assignment">Confirm Assignment</button>';
+            assignModal.classList.add('visible');
+        }
+
+        function selectCollector(element) {
+            document.querySelectorAll('#assignModalBody .assign-collector-card').forEach(card => card.classList.remove('selected'));
+            element.classList.add('selected');
+        }
+        
+        function openManualEntryModal() {
+            document.getElementById('manual-items-container').innerHTML = '';
+            addManualItem();
+            manualEntryModal.classList.add('visible');
+        }
+        
+        function addManualItem() {
+            const container = document.getElementById('manual-items-container');
+            const itemWrapper = document.createElement('div');
+            itemWrapper.className = 'inventory-sale-item';
+            itemWrapper.setAttribute('oninput', 'updateManualTotal()');
+
+            let options = mockMaterials.map(m => `<option value="${m.price}">${m.name}</option>`).join('');
+
+            itemWrapper.innerHTML = `
+                <select class="material-select" style="width: 100%; margin-bottom: 8px; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px;" onchange="updatePrice(this)">
+                    ${options}
+                </select>
+                <div class="item-inputs-grid">
+                    <input type="number" placeholder="Volume" class="volume-input" value="1">
+                    <select class="unit-select">
+                        <option>kg</option>
+                        <option>pcs</option>
+                    </select>
+                    <input type="number" placeholder="Price" class="price-input" step="0.01">
+                </div>
+                <input type="text" class="comment-input" placeholder="Add a comment...">
+            `;
+            container.appendChild(itemWrapper);
+            updatePrice(itemWrapper.querySelector('.material-select'));
+        }
+        
+        function updatePrice(selectElement) {
+            const selectedOption = selectElement.options[selectElement.selectedIndex];
+            const price = selectedOption.value;
+            const itemWrapper = selectElement.closest('.inventory-sale-item');
+            const priceInput = itemWrapper.querySelector('.price-input');
+            priceInput.value = parseFloat(price).toFixed(2);
+            updateManualTotal();
+        }
+
+        function updateManualTotal() {
+            let total = 0;
+            document.querySelectorAll('#manual-items-container .inventory-sale-item').forEach(item => {
+                const volume = parseFloat(item.querySelector('.volume-input').value) || 0;
+                const price = parseFloat(item.querySelector('.price-input').value) || 0;
+                total += volume * price;
+            });
+            document.getElementById('manual-total').textContent = `₱${total.toFixed(2)}`;
+        }
+        
+        function openSellModal() {
+            document.getElementById('inventory-sale-items-container').innerHTML = '';
+            document.getElementById('buyer-input').value = '';
+            addInventorySaleItem();
+            updateInventorySaleTotal();
+            sellInventoryModal.classList.add('visible');
+        }
+        
+        function addInventorySaleItem() {
+            const container = document.getElementById('inventory-sale-items-container');
+            const itemWrapper = document.createElement('div');
+            itemWrapper.className = 'inventory-sale-item';
+            
+            let options = mockMaterials.map(m => `<option value="${m.price}" data-stock="${m.stock}">${m.name} (${m.stock} kg)</option>`).join('');
+
+            itemWrapper.innerHTML = `
+                <select class="material-select" style="width: 100%; margin-bottom: 8px; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px;">${options}</select>
+                <div class="item-inputs-grid">
+                    <input type="number" placeholder="Volume" oninput="updateInventorySaleTotal()">
+                    <select class="unit-select"><option>kg</option><option>pcs</option><option>dozen</option></select>
+                    <input type="number" placeholder="Price" oninput="updateInventorySaleTotal()">
+                </div>
+            `;
+            container.appendChild(itemWrapper);
+        }
+
+        function updateInventorySaleTotal() {
+            let total = 0;
+            document.querySelectorAll('#inventory-sale-items-container .inventory-sale-item').forEach(item => {
+                const volume = parseFloat(item.querySelectorAll('input')[0].value) || 0;
+                const price = parseFloat(item.querySelectorAll('input')[1].value) || 0;
+                total += volume * price;
+            });
+            document.getElementById('inventory-sale-total').textContent = `₱${total.toFixed(2)}`;
+        }
+        
+        function toggleCollectorMenu() {
+            document.getElementById('collector-dropdown').classList.toggle('show');
+        }
+
+        function renderUserDirectory(searchTerm = '') {
+            const container = document.getElementById('user-directory-list');
+            container.innerHTML = '';
+            const allUsers = [
+                ...mockCollectors.map(c => ({...c, role: 'Collector'})),
+                ...mockChats.filter(c => c.role === 'Household').map(c => ({...c}))
+            ];
+
+            const filteredUsers = allUsers.filter(user => user.name.toLowerCase().includes(searchTerm.toLowerCase()));
+
+            if (filteredUsers.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color: var(--text-secondary); padding: 20px;">No users found.</p>';
+                return;
+            }
+
+            filteredUsers.forEach(user => {
+                const escapedName = user.name.replace(/'/g, "\\'");
+                container.innerHTML += `
+                    <div class="user-list-item" onclick="openConversation('${escapedName}')">
+                        <div class="collector-avatar">${user.avatar}</div>
+                        <div class="collector-info">
+                            <div class="collector-name">${user.name}</div>
+                            <p class="collector-stats">${user.role}</p>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+
+        // --- EVENT LISTENERS & INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            renderDashboard();
+            renderAllPickups();
+            renderCollectors();
+            renderPriceList();
+            renderInventoryStock();
+            renderApplications();
+            renderChatList();
+            renderHistory();
+            renderNotifications();
+            renderUserDirectory();
+            navigateTo('dashboard-page');
+
+            document.getElementById('user-search-input').addEventListener('input', (e) => {
+                renderUserDirectory(e.target.value);
+            });
+
+            document.querySelector('#history-page .tab-nav').addEventListener('click', (e) => {
+                if (e.target.classList.contains('tab-item')) {
+                    const tabId = e.target.dataset.tab;
+                    document.querySelectorAll('#history-page .tab-item').forEach(tab => tab.classList.remove('active'));
+                    document.querySelectorAll('#history-page .tab-content').forEach(content => content.classList.remove('active'));
+                    e.target.classList.add('active');
+                    document.getElementById(`tab-${tabId}`).classList.add('active');
+                }
+            });
+            
+            document.querySelector('#pickups-page .tab-nav').addEventListener('click', (e) => {
+                if (e.target.classList.contains('tab-item')) {
+                    const tabId = e.target.dataset.tab;
+                    document.querySelectorAll('#pickups-page .tab-item').forEach(tab => tab.classList.remove('active'));
+                    document.querySelectorAll('#pickups-page .tab-content').forEach(content => content.classList.remove('active'));
+                    e.target.classList.add('active');
+                    document.getElementById(`tab-${tabId}`).classList.add('active');
+                }
+            });
+
+            document.querySelector('#tab-assigned').addEventListener('click', (e) => {
+                if (e.target.classList.contains('sub-tab-item')) {
+                    const subTabId = e.target.dataset.subtab;
+                    document.querySelectorAll('#tab-assigned .sub-tab-item').forEach(tab => tab.classList.remove('active'));
+                    document.querySelectorAll('#tab-assigned .sub-tab-content').forEach(content => content.classList.remove('active'));
+                    e.target.classList.add('active');
+                    document.getElementById(`sub-tab-${subTabId}`).classList.add('active');
+                }
+            });
+            
+            document.querySelector('.nav-items').addEventListener('click', (e) => {
+                const navItem = e.target.closest('.nav-item');
+                if (navItem && !navItem.classList.contains('nav-item-post')) {
+                    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+                    navItem.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

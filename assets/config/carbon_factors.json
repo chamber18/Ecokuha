@@ -1,0 +1,351 @@
+{
+  "description": "Carbon dioxide (CO₂) emissions saved per kilogram of material recycled compared to producing from virgin materials. Factors are based on EPA WARM model and environmental research, mapped to EcoKuha's accepted materials.",
+  "last_updated": "2025-12-16",
+  "unit": "kg CO₂ saved per kg material recycled",
+  "factors": {
+    "plastic": {
+      "mono": {
+        "value": 1.6,
+        "note": "Mono plastic. Polypropylene recycling."
+      },
+      "pet": {
+        "value": 2.0,
+        "note": "PET plastic. High energy savings from avoiding virgin PET production."
+      },
+      "pet_bottles": {
+        "value": 2.0,
+        "note": "PET bottles (water, soda). High energy savings."
+      },
+      "pet_bottles_clear": {
+        "value": 2.0,
+        "note": "Clear PET bottles. Premium quality recycling."
+      },
+      "pet_bottles_colored": {
+        "value": 1.9,
+        "note": "Colored PET bottles. Slightly lower than clear."
+      },
+      "hdpe": {
+        "value": 1.7,
+        "note": "HDPE containers. High-density polyethylene."
+      },
+      "hdpe_containers": {
+        "value": 1.7,
+        "note": "HDPE containers (milk jugs, detergent)."
+      },
+      "mixed_plastic": {
+        "value": 1.5,
+        "note": "Mixed plastic types (HDPE, LDPE, PP). Average recycling value."
+      },
+      "assorted_plastic": {
+        "value": 1.5,
+        "note": "Mixed plastic types. Average recycling value."
+      },
+      "monobloc": {
+        "value": 1.6,
+        "note": "Monobloc chairs (polypropylene). Durable plastic recycling."
+      },
+      "kola_plastic": {
+        "value": 1.3,
+        "note": "Low-grade plastic films. Lower recycling efficiency."
+      },
+      "default": {
+        "value": 1.6,
+        "note": "Generic plastic recycling factor."
+      }
+    },
+    "metal": {
+      "aluminum": {
+        "value": 9.0,
+        "note": "Aluminum. Highest recycling benefit - 95% energy savings."
+      },
+      "aluminum_cans": {
+        "value": 9.0,
+        "note": "Aluminum cans. Highest recycling benefit - 95% energy savings vs virgin production."
+      },
+      "kaldero": {
+        "value": 8.5,
+        "note": "Aluminum pots and cookware. High aluminum recycling value."
+      },
+      "assorted_aluminum": {
+        "value": 8.0,
+        "note": "Mixed aluminum items. Slightly lower than pure aluminum."
+      },
+      "copper": {
+        "value": 3.5,
+        "note": "Pure copper. High energy savings from avoiding mining and smelting."
+      },
+      "copper_wire": {
+        "value": 3.5,
+        "note": "Copper wire. High energy savings."
+      },
+      "copper_radiator": {
+        "value": 3.5,
+        "note": "Copper radiators from AC units. High copper content (~70-80% copper)."
+      },
+      "brass": {
+        "value": 2.8,
+        "note": "Brass fittings and products. Copper-zinc alloy."
+      },
+      "stainless_steel": {
+        "value": 1.7,
+        "note": "Stainless steel items. Contains chromium and nickel."
+      },
+      "steel": {
+        "value": 1.5,
+        "note": "Steel materials. Standard steel recycling."
+      },
+      "iron": {
+        "value": 1.5,
+        "note": "Iron scrap. Standard ferrous metal recycling."
+      },
+      "steel_iron": {
+        "value": 1.5,
+        "note": "Steel/Iron scrap. Standard ferrous metal recycling."
+      },
+      "steel_plate": {
+        "value": 1.5,
+        "note": "Steel plates. Heavy-duty steel recycling."
+      },
+      "tin": {
+        "value": 1.4,
+        "note": "Tin materials. Steel with tin coating."
+      },
+      "tin_can": {
+        "value": 1.4,
+        "note": "Tin cans (food cans). Steel with tin coating."
+      },
+      "zinc": {
+        "value": 2.0,
+        "note": "Zinc materials. Non-ferrous metal recycling."
+      },
+      "sin_roof": {
+        "value": 1.3,
+        "note": "Corrugated metal roofing (zinc/galvanized steel)."
+      },
+      "aluminum_radiator": {
+        "value": 7.0,
+        "note": "Aluminum radiators. High recycling value, ~80% aluminum content."
+      },
+      "light_metals": {
+        "value": 1.8,
+        "note": "Light mixed metals. Combination of aluminum and other light alloys."
+      },
+      "default": {
+        "value": 2.0,
+        "note": "Generic metal recycling factor."
+      }
+    },
+    "paper": {
+      "white_paper": {
+        "value": 1.2,
+        "note": "White office paper. High quality recycling."
+      },
+      "white_bondpaper": {
+        "value": 1.2,
+        "note": "White bond paper. High quality recycling."
+      },
+      "newspaper": {
+        "value": 1.0,
+        "note": "Old newspapers. Standard paper recycling."
+      },
+      "cardboard": {
+        "value": 1.3,
+        "note": "Corrugated cardboard/boxes. Energy-intensive virgin production."
+      },
+      "karton": {
+        "value": 1.3,
+        "note": "Cardboard/corrugated boxes. Energy-intensive virgin production."
+      },
+      "mixed_paper": {
+        "value": 1.1,
+        "note": "Mixed paper grades."
+      },
+      "assorted_paper": {
+        "value": 1.0,
+        "note": "Mixed paper types. Lower quality recycling."
+      },
+      "paper_mix": {
+        "value": 1.1,
+        "note": "Mixed paper grades."
+      },
+      "paper_white": {
+        "value": 1.2,
+        "note": "White paper products."
+      },
+      "default": {
+        "value": 1.1,
+        "note": "Generic paper recycling factor."
+      }
+    },
+    "glass": {
+      "clear_glass": {
+        "value": 0.4,
+        "note": "Clear glass. Standard glass recycling."
+      },
+      "clear_glass_bottles": {
+        "value": 0.4,
+        "note": "Clear glass bottles. Standard glass recycling."
+      },
+      "colored_glass": {
+        "value": 0.3,
+        "note": "Colored glass. Standard glass recycling."
+      },
+      "softdrinks_bottle": {
+        "value": 0.4,
+        "note": "Softdrink bottles (Pepsi, Coke, 8-12oz). Standard glass recycling."
+      },
+      "beer_bottle": {
+        "value": 0.4,
+        "note": "Beer bottles (RedHorse, San Mig). Standard glass recycling."
+      },
+      "liquor_bottle": {
+        "value": 0.4,
+        "note": "Liquor bottles (Tanduay, Emperador, Kulafu). Standard glass recycling."
+      },
+      "garapa": {
+        "value": 0.3,
+        "note": "Garapa bottles (small/big). Lower quality glass."
+      },
+      "condiment_bottle": {
+        "value": 0.3,
+        "note": "Ketchup and condiment bottles. Mixed glass quality."
+      },
+      "default": {
+        "value": 0.4,
+        "note": "Generic glass bottle recycling."
+      }
+    },
+    "electronics": {
+      "mobile_phones": {
+        "value": 2.5,
+        "note": "Mobile phones. Contains precious metals and prevents toxic waste."
+      },
+      "computer_parts": {
+        "value": 2.8,
+        "note": "Computer parts. High value due to precious metal content."
+      },
+      "motherboard": {
+        "value": 2.8,
+        "note": "Computer motherboards. High value due to precious metal content."
+      },
+      "tv_board": {
+        "value": 2.5,
+        "note": "TV circuit boards. Contains precious metals (gold, silver)."
+      },
+      "cpu": {
+        "value": 2.6,
+        "note": "Computer processors. Contains gold and other valuable materials."
+      },
+      "cables_wires": {
+        "value": 1.5,
+        "note": "Electronic cables and wires. Copper recovery."
+      },
+      "batteries": {
+        "value": 0.7,
+        "note": "Batteries. Lead recovery and prevents pollution."
+      },
+      "car_battery": {
+        "value": 0.7,
+        "note": "Lead-acid car batteries. Prevents lead pollution."
+      },
+      "motorcycle_battery": {
+        "value": 0.7,
+        "note": "Motorcycle batteries. Same lead-acid chemistry."
+      },
+      "airconditioner": {
+        "value": 1.8,
+        "note": "Air conditioning units. Refrigerant recovery and metal recycling."
+      },
+      "split_type_aircon": {
+        "value": 1.8,
+        "note": "Split-type air conditioners. Refrigerant and metal recovery."
+      },
+      "refrigerator": {
+        "value": 1.5,
+        "note": "Refrigerators. Refrigerant recovery and steel recycling."
+      },
+      "retro_tv": {
+        "value": 2.0,
+        "note": "CRT televisions. Contains valuable metals and prevents toxic materials."
+      },
+      "washing_machine": {
+        "value": 1.3,
+        "note": "Washing machines. Mostly steel and motor components."
+      },
+      "default": {
+        "value": 2.0,
+        "note": "Generic e-waste recycling factor."
+      }
+    },
+    "iron": {
+      "bakal_solid": {
+        "value": 1.7,
+        "note": "Solid iron/steel scrap. High-quality ferrous metal."
+      },
+      "bakal_light": {
+        "value": 1.5,
+        "note": "Light iron/steel. Thinner gauge metal."
+      },
+      "bakal_assorted": {
+        "value": 1.4,
+        "note": "Mixed iron/steel grades. Average of various types."
+      },
+      "pundido": {
+        "value": 1.6,
+        "note": "Cast iron. Dense ferrous metal."
+      },
+      "cyclone": {
+        "value": 1.3,
+        "note": "Cyclone wire/mesh. Thin metal products."
+      },
+      "alloy": {
+        "value": 1.8,
+        "note": "Iron alloys. Contains additional metals (chromium, nickel)."
+      },
+      "default": {
+        "value": 1.5,
+        "note": "Generic iron/steel recycling factor."
+      }
+    },
+    "others": {
+      "tires": {
+        "value": 1.2,
+        "note": "Vehicle tires. Rubber recycling and energy recovery."
+      },
+      "vehicle_scrap": {
+        "value": 1.8,
+        "note": "Scrap vehicles. Mixed metal recycling."
+      },
+      "can_tray": {
+        "value": 1.5,
+        "note": "Metal can trays. Steel recycling."
+      },
+      "lata": {
+        "value": 1.4,
+        "note": "Tin cans (food containers). Steel with coating."
+      },
+      "default": {
+        "value": 1.0,
+        "note": "Generic miscellaneous material recycling."
+      }
+    },
+    "default": {
+      "value": 0.5,
+      "note": "Fallback for unspecified materials. Conservative estimate."
+    }
+  },
+  "sources": [
+    "U.S. Environmental Protection Agency (EPA) - Waste Reduction Model (WARM)",
+    "WRAP (Waste & Resources Action Programme) - UK Environmental Research",
+    "European Environment Agency - Life Cycle Assessment Data",
+    "Container Recycling Institute - Material-Specific Studies",
+    "EcoKuha Material Database - Based on Philippine junkshop material types"
+  ],
+  "notes": [
+    "Carbon factors represent gross savings (avoided emissions from virgin production minus recycling process emissions)",
+    "Actual savings may vary based on local recycling infrastructure and transportation distances",
+    "These are conservative estimates - some studies show higher values",
+    "Aluminum has the highest factor because virgin production requires bauxite mining and energy-intensive smelting",
+    "Material names are matched case-insensitively with underscores/spaces normalized"
+  ]
+}

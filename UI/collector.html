@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>B.B.P. Tracker Collector</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" xintegrity="sha512-Zcn6bjR/APQiUoJdGbpbCKvXsoXv2WjmxLVw8cOAZzRzKHeun+DTymG0agFiGEvSijUam/S21eKMOe_dMHvS_A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js" xintegrity="sha512-puJW3E/qXDqYp9IfhAI5iXcn4KGFYjG2dsyloOKv0+LPlk+xIUTU6iBGJ1I6M2r8pSboM/rtNXB4/2wIcw+O5Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <style>
+        :root {
+            --primary-blue: #3B82F6;
+            --dark-blue: #2563EB;
+            --primary-purple: #8B5CF6; /* For new nav */
+            --dark-purple: #7C3AED;   /* For new nav */
+            --background-light: #f8fafc;
+            --background-dark: #f1f5f9;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            --success-color: #16a34a;
+            --error-color: #ef4444;
+            --warning-color: #f97316;
+            --star-color: #f59e0b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #e5e7eb;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            color: var(--text-primary);
+            padding: 20px 0;
+        }
+
+        .phone-container {
+            width: 375px;
+            height: 812px;
+            background: var(--background-light);
+            border-radius: 40px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* UPDATED PAGE TRANSITION (NO ANIMATION) */
+        .page {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--background-light);
+            visibility: hidden;
+            opacity: 0;
+            z-index: 9;
+        }
+        .page.active {
+            visibility: visible;
+            opacity: 1;
+            z-index: 10;
+        }
+
+        .main-content { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; }
+        .main-content::-webkit-scrollbar { display: none; }
+        .main-content { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* --- HEADER STYLES --- */
+        .header {
+            background: var(--background-light); padding: 50px 24px 16px;
+            color: var(--text-primary); border-bottom: 1px solid #e2e8f0;
+            display: flex; align-items: center; gap: 16px; flex-shrink: 0;
+        }
+        .header .back-btn { color: var(--text-primary); text-decoration: none; font-size: 24px; cursor: pointer; }
+        .header h1 { font-size: 20px; font-weight: 700; }
+        
+        #collector-home-page .header {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--dark-blue) 100%);
+            color: white;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+            padding: 40px 24px 20px;
+            border-bottom-left-radius: 24px;
+            border-bottom-right-radius: 24px;
+        }
+        .app-title { font-size: 24px; font-weight: 800; }
+        .user-type-tag {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .greeting-header {
+            padding: 16px 24px 8px;
+        }
+        .greeting-header h1 { font-size: 24px; font-weight: 800; margin: 0; }
+        .greeting-header p { font-size: 14px; color: var(--text-secondary); margin: 0; }
+        
+        /* Page-specific overrides */
+        #collector-home-page .main-content,
+        #collector-chat-list-page .main-content,
+        #collector-collections-page .main-content,
+        #collector-transaction-detail-page .main-content,
+        #collector-profile-page .main-content,
+        #collector-feedback-page .main-content,
+        #collector-account-settings-page .main-content,
+        #collector-notifications-page .main-content {
+             display: block;
+        }
+        #collector-conversation-page .main-content { display: flex; }
+        #collector-home-page .main-content { padding: 0; }
+
+        /* --- NEW COLLECTION CARD STYLES --- */
+        #collector-task-list { padding: 8px 24px; }
+        .collection-card {
+            background: white;
+            border-radius: 16px;
+            margin-bottom: 16px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid #e2e8f0;
+            cursor: pointer;
+            padding: 16px;
+            position: relative;
+        }
+        .collection-card.high-priority {
+            border: 2px solid var(--warning-color);
+        }
+        .priority-banner {
+            background-color: var(--warning-color);
+            color: white;
+            text-align: center;
+            padding: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            border-top-left-radius: 14px;
+            border-top-right-radius: 14px;
+            margin: -16px -16px 12px -16px;
+        }
+        .priority-banner span {
+            border-left: 2px solid rgba(255, 255, 255, 0.5);
+            padding-left: 8px;
+            margin-left: 8px;
+        }
+        .card-header {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+        }
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: #dbeafe;
+            color: var(--primary-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+        .card-info { flex-grow: 1; }
+        .card-info h4 { font-size: 16px; font-weight: 700; }
+        .card-info p { font-size: 13px; color: var(--text-secondary); }
+        .card-price {
+            margin-left: auto;
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--success-color);
+            flex-shrink: 0;
+        }
+        .card-categories {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+        .category-tag {
+            background-color: var(--background-dark);
+            color: var(--text-secondary);
+            font-size: 11px;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+        .card-details-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+        .detail-item { text-align: left; }
+        .detail-item .label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-bottom: 2px;
+            display: block;
+        }
+        .detail-item .value {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        /* TASK & BATCH PAGE STYLES */
+        .map-container { height: 40%; background-color: #eaf0f2; flex-shrink: 0; }
+        #leaflet-map-collector { width: 100%; height: 100%; }
+        .details-card { background: white; padding: 24px; border-top-left-radius: 24px; border-top-right-radius: 24px; box-shadow: 0 -10px 30px rgba(0,0,0,0.1); flex-grow: 1; overflow-y: auto; }
+        .household-info { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+        .household-avatar { width: 48px; height: 48px; border-radius: 50%; background: var(--background-dark); display: flex; align-items: center; justify-content: center; font-size: 24px; }
+        .household-avatar::before { content: '🏠';}
+        .household-details h3 { font-size: 18px; font-weight: 700; }
+        .household-details p { font-size: 14px; color: var(--text-secondary); }
+        .contact-buttons { display: flex; gap: 12px; margin-left: auto; }
+        .contact-buttons button { width: 44px; height: 44px; border-radius: 50%; border: none; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .message-btn { background: #e0e7ff; color: #4f46e5; }
+        .message-btn::before { content: '💬'; }
+        .call-btn { background: var(--dark-blue); color: white; }
+        .call-btn::before { content: '📞'; }
+        .workflow-status { text-align: center; font-weight: 600; color: var(--text-secondary); margin-bottom: 16px; }
+        .workflow-action-button { width: 100%; padding: 18px; font-size: 16px; font-weight: 700; cursor: pointer; border: none; border-radius: 16px; background-color: var(--primary-blue); color: white; }
+        .workflow-action-button.secondary { background-color: var(--success-color); }
+        .photo-confirmation { text-align: center; padding: 20px; font-weight: 600; color: var(--success-color); background-color: #dcfce7; border-radius: 12px; margin-bottom: 16px;}
+        .receipt-form .item-entry { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+        .receipt-form .item-entry label { flex-grow: 1; font-weight: 500; }
+        .receipt-form .item-entry input { width: 80px; padding: 8px; border-radius: 8px; border: 1px solid #e2e8f0; text-align: right; }
+
+        /* CHAT PAGES */
+        #collector-conversation-page .chat-container { padding: 16px; display: flex; flex-direction: column; gap: 4px; flex-grow: 1; overflow-y: auto; }
+        .chat-list-item { display: flex; align-items: center; gap: 16px; padding: 16px 24px; border-bottom: 1px solid #e2e8f0; cursor: pointer; }
+        .chat-list-item:hover { background-color: var(--background-dark); }
+        .chat-avatar { width: 52px; height: 52px; border-radius: 50%; background: var(--background-dark); display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; }
+        .chat-avatar::before { content: '🏠'; }
+        .chat-info { flex-grow: 1; min-width: 0; }
+        .chat-name { font-weight: 700; font-size: 16px; }
+        .chat-preview { font-size: 14px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .chat-meta { text-align: right; flex-shrink: 0; }
+        .chat-time { font-size: 12px; color: var(--text-secondary); }
+        #collector-conversation-page .header-info { display: flex; flex-direction: column; align-items: flex-start; }
+        #collector-conversation-page #active-status { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-secondary); font-weight: 500; }
+        #collector-conversation-page .active-dot { width: 8px; height: 8px; background-color: var(--success-color); border-radius: 50%; }
+        .message-wrapper { display: flex; flex-direction: column; margin-bottom: 8px; }
+        .message-wrapper.user-message-wrapper { align-items: flex-end; }
+        .message-wrapper.contact-message-wrapper { align-items: flex-start; }
+        .chat-message { max-width: 80%; padding: 12px 16px; border-radius: 18px; line-height: 1.5; }
+        .user-message { background-color: var(--primary-blue); color: white; border-bottom-right-radius: 4px; }
+        .contact-message { background-color: var(--background-dark); color: var(--text-primary); border-bottom-left-radius: 4px; }
+        .chat-input-area { flex-shrink: 0; padding: 16px; background: var(--background-light); border-top: 1px solid #e2e8f0; }
+        .chat-input-container { display: flex; align-items: center; gap: 8px; }
+        #chat-input { flex-grow: 1; padding: 12px 16px; border: 1px solid #e2e8f0; border-radius: 20px; font-family: 'Inter'; font-size: 14px; }
+        #send-btn { background: var(--primary-blue); color: white; border: none; width: 44px; height: 44px; border-radius: 50%; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        #send-btn::before { content: '➤'; }
+
+        /* COLLECTIONS & PROFILE PAGES */
+        #collector-collections-page .main-content, #collector-transaction-detail-page .main-content, #collector-profile-page .main-content, #collector-feedback-page .main-content, #collector-account-settings-page .main-content { padding: 16px 24px; }
+        .collections-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+        .collections-card { background: white; padding: 16px; border-radius: 16px; box-shadow: var(--card-shadow); border: 1px solid #e2e8f0; }
+        .collections-card .label { font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; display: block;}
+        .collections-card .value { font-size: 24px; font-weight: 800; color: var(--text-primary); }
+        .transaction-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #e2e8f0; cursor: pointer; }
+        .transaction-item:last-child { border-bottom: none; }
+        .transaction-icon { width: 40px; height: 40px; border-radius: 10px; background: var(--background-dark); display: flex; align-items: center; justify-content: center; font-size: 18px; }
+        .transaction-icon::before { content: '💰';}
+        .transaction-details { flex-grow: 1; }
+        .transaction-details h4 { font-size: 14px; font-weight: 600; }
+        .transaction-details p { font-size: 12px; color: var(--text-secondary); }
+        .transaction-amount { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+        .detail-card { background: white; border-radius: 16px; padding: 16px; margin-bottom: 12px; box-shadow: var(--card-shadow); }
+        .detail-row { display: flex; justify-content: space-between; align-items: center; font-size: 14px; padding: 10px 0; border-bottom: 1px solid #e2e8f0; }
+        .detail-row:last-child { border-bottom: none; }
+        .detail-row .label { color: var(--text-secondary); }
+        .detail-row .value { font-weight: 600; text-align: right; }
+        .profile-header { padding: 24px 0; text-align: center; position: relative; }
+        .profile-avatar { width: 90px; height: 90px; border-radius: 50%; background: var(--background-dark); display: inline-flex; align-items: center; justify-content: center; font-size: 48px; margin-bottom: 12px; border: 4px solid white; box-shadow: 0 4px 15px rgba(0,0,0,0.1); position: relative; }
+        .profile-avatar::before { content: '👤';}
+        .profile-avatar .edit-icon { position: absolute; bottom: 0; right: 0; width: 28px; height: 28px; background-color: var(--primary-blue); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; border: 2px solid white; cursor: pointer; }
+        .profile-name { font-size: 22px; font-weight: 800; }
+        .profile-shop { font-size: 14px; color: var(--text-secondary); font-weight: 500;}
+        .profile-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; padding: 16px 0; }
+        .stat-item { text-align: center; }
+        .stat-item .value { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+        .stat-item .label { font-size: 12px; color: var(--text-secondary); }
+        .review-card { background: white; border-radius: 16px; padding: 16px; margin-bottom: 12px; box-shadow: var(--card-shadow); border: 1px solid #e2e8f0; }
+        .review-header { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+        .reviewer-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--background-dark); display: flex; align-items: center; justify-content: center; font-size: 20px; }
+        .reviewer-avatar::before { content: '🏠';}
+        .reviewer-info .name { font-weight: 600; }
+        .star-rating { color: var(--star-color); font-size: 14px; }
+        .settings-group { background: white; border-radius: 16px; margin-top: 24px; box-shadow: var(--card-shadow); border: 1px solid #e2e8f0; overflow: hidden; }
+        .settings-item { display: flex; align-items: center; padding: 12px 16px; border-bottom: 1px solid #e2e8f0; cursor: pointer; font-weight: 600; gap: 16px; }
+        .settings-item:last-child { border-bottom: none; }
+        .settings-item:hover { background-color: var(--background-dark); }
+        .settings-icon-wrapper { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+        .settings-icon-wrapper.account { background-color: #e0e7ff; color: #4f46e5; }
+        .settings-icon-wrapper.notifications { background-color: #fef3c7; color: #f59e0b; }
+        .settings-icon-wrapper.feedback { background-color: #dcfce7; color: #16a34a; }
+        .settings-item span { flex-grow: 1; }
+        .settings-item .chevron { font-size: 18px; color: var(--text-secondary); }
+        .logout-btn { display: block; width: 100%; padding: 16px; margin-top: 16px; border: none; border-radius: 12px; background: #fee2e2; color: var(--error-color); font-size: 16px; font-weight: 700; cursor: pointer; }
+
+        /* ACCOUNT SETTINGS PAGE */
+        .form-card { background: white; border-radius: 16px; padding: 24px; margin-bottom: 24px; box-shadow: var(--card-shadow); }
+        .form-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .form-header h3 { font-size: 18px; font-weight: 700; }
+        .form-header button { background: var(--primary-blue); color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; }
+        .form-group input { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-family: 'Inter'; font-size: 14px; }
+
+        /* --- UPDATED NAVIGATION STYLES --- */
+        .bottom-nav {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            width: 100%; height: 90px; background: white;
+            display: flex; justify-content: center; align-items: center;
+            padding: 0 10px 15px; border-top: 1px solid #e2e8f0;
+            z-index: 1001;
+        }
+        .bottom-nav.hidden { display: none; }
+        .nav-items { display: flex; justify-content: space-around; align-items: center; width: 100%; height: 100%; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-secondary); text-decoration: none; cursor: pointer; font-size: 10px; font-weight: 600; flex: 1; text-align: center; transition: color 0.2s ease-in-out; }
+        .nav-item.active { color: var(--primary-blue); }
+        .nav-icon { width: 28px; height: 28px; position: relative; }
+        .nav-icon svg { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
+        .nav-items.enabled .nav-icon { color: var(--primary-blue); }
+        .nav-items.disabled .nav-icon { color: var(--text-secondary); }
+        .nav-item-power { flex: 1; text-align: center; }
+        .power-btn-inner {
+            width: 60px; height: 60px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: white; border: 4px solid var(--background-light);
+            box-shadow: none; margin: -35px auto 0;
+            position: relative; z-index: 1; cursor: pointer; transition: background-color 0.2s ease-in-out;
+        }
+        .power-btn-inner.enabled { background-color: var(--success-color); }
+        .power-btn-inner.disabled { background-color: var(--text-secondary); }
+        .power-btn-inner svg { width: 28px; height: 28px; }
+        
+        .leaflet-div-icon { background: transparent; border: none; }
+    </style>
+</head>
+<body>
+
+<div class="phone-container">
+
+    <!-- All page containers go here -->
+    <div id="collector-home-page" class="page">
+        <div class="header">
+            <div class="app-title">♻️ B.B.P. Tracker</div>
+            <div class="user-type-tag">Collector</div>
+        </div>
+        <div class="main-content">
+            <div class="greeting-header">
+                <h1>Hi, Juan!</h1>
+                <p id="greeting-message"></p>
+            </div>
+            <div id="collector-task-list"></div>
+        </div>
+    </div>
+    <div id="collector-task-page" class="page"><div class="header"><div class="back-btn" onclick="collectorNavigateTo('collector-home-page')">‹</div><h1>Collection Details</h1></div><div class="main-content"><div class="map-container"><div id="leaflet-map-collector"></div></div><div class="details-card" id="task-details-card"></div></div></div>
+    <div id="collector-chat-list-page" class="page"><div class="header"><h1>Messages</h1></div><div class="main-content"><div id="collector-chat-list"></div></div></div>
+    <div id="collector-collections-page" class="page"><div class="header"><h1>My Collections</h1></div><div class="main-content"><div class="collections-grid"><div class="collections-card"><span class="label">Today</span><div class="value">3</div></div><div class="collections-card"><span class="label">This Week</span><div class="value">12</div></div></div><h3 class="section-title">Collection History</h3><div id="collection-history-list"></div></div></div>
+    <div id="collector-transaction-detail-page" class="page"><div class="header"><div class="back-btn" onclick="collectorNavigateTo('collector-collections-page')">‹</div><h1>Collection Details</h1></div><div class="main-content"></div></div>
+    <div id="collector-profile-page" class="page"><div class="header"><div class="back-btn" onclick="collectorNavigateTo('collector-home-page')">‹</div><h1>My Profile</h1></div><div class="main-content"><div class="profile-header"><div class="profile-avatar"><div class="edit-icon" onclick="collectorNavigateTo('collector-account-settings-page')">✎</div></div><h2 class="profile-name">Juan Santos</h2><p class="profile-shop">Affiliated with: <strong>Green Earth Junk Shop</strong></p></div><div class="profile-stats"><div class="stat-item"><div class="value">4.9</div><div class="label">Rating</div></div><div class="stat-item"><div class="value">215</div><div class="label">Collections</div></div><div class="stat-item"><div class="value">1.2k kg</div><div class="label">Recycled</div></div></div><div id="profile-settings-container"></div></div></div>
+    <div id="collector-feedback-page" class="page"><div class="header"><div class="back-btn" onclick="collectorNavigateTo('collector-profile-page')">‹</div><h1>Feedback</h1></div><div class="main-content" id="all-feedback-list"></div></div>
+    <div id="collector-account-settings-page" class="page"><div class="header"><div class="back-btn" onclick="collectorNavigateTo('collector-profile-page')">‹</div><h1>Account Settings</h1></div><div class="main-content" id="account-settings-content"></div></div>
+    <div id="collector-notifications-page" class="page"><div class="header"><div class="back-btn" onclick="collectorNavigateTo('collector-profile-page')">‹</div><h1>Notifications</h1></div><div class="main-content" id="notifications-content"></div></div>
+
+    <!-- UPDATED BOTTOM NAVIGATION -->
+    <div class="bottom-nav">
+        <div class="nav-items">
+            <div class="nav-item" id="nav-collector-home" onclick="collectorNavigateTo('collector-home-page')">
+                <div class="nav-icon">
+                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h7.5" /></svg>
+                </div>
+                Home
+            </div>
+            <div class="nav-item" id="nav-collector-collections" onclick="collectorNavigateTo('collector-collections-page')">
+                <div class="nav-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>
+                </div>
+                Collections
+            </div>
+            <div class="nav-item-power">
+                <div class="power-btn-inner" id="power-btn">
+                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M5.636 5.636a9 9 0 1012.728 0M12 3v9" /></svg>
+                </div>
+            </div>
+            <div class="nav-item" id="nav-collector-chat-list" onclick="collectorNavigateTo('collector-chat-list-page')">
+                <div class="nav-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193l-3.722.345c-.344.032-.694.055-1.054.055c-1.259 0-2.443-.443-3.363-1.233c-.342-.286-.683-.601-.993-.941c-.31-.34-.62-.701-.913-1.079c-.294-.378-.568-.78-.81-1.206c-.242-.426-.453-.883-.63-1.362c-.177-.478-.318-1-.41-1.543c-.092-.544-.142-1.112-.142-1.695c0-.632.07-1.252.206-1.844c.136-.592.323-1.16.55-1.688c.227-.528.502-1.023.81-1.48c.308-.457.656-.88.993-1.258c.337-.378.712-.71 1.1-1.001c.388-.29.81-.53 1.265-.715c.455-.185.94-.32 1.455-.401c.515-.082 1.05-.123 1.605-.123c.69 0 1.356.066 1.993.193c.637.127 1.25.323 1.817.583" /></svg>
+                </div>
+                Messages
+            </div>
+            <div class="nav-item" id="nav-collector-profile" onclick="collectorNavigateTo('collector-profile-page')">
+                <div class="nav-icon">
+                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
+                </div>
+                Profile
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // --- MAP AND STATE VARIABLES ---
+    let collectorMap;
+    let isAvailable = true;
+
+    // --- MOCK DATA ---
+    const mockCollectorTasks = [
+        { id: 1, household: 'Maria C.', address: '123 Green St, Tagum City', coords: [7.4478, 125.8078], status: 'pending', price: '₱150.75', windowTime: '8am - 11am', estWeight: '7.3 kg', categories: ['Plastics', 'Cans'], distance: '2.1 km', eta: '12 mins', priority: 'high' },
+        { id: 2, household: 'John D.', address: '456 Eco Ave, Tagum City', coords: [7.4510, 125.8150], status: 'pending', price: '₱210.00', windowTime: '9am - 12pm', estWeight: '8.0 kg', categories: ['Paper'], distance: '3.5 km', eta: '18 mins', priority: 'normal' },
+        { id: 3, household: 'Pedro L.', address: '789 Recycle Rd, Tagum City', coords: [7.4425, 125.8005], status: 'completed', price: '₱350.50', windowTime: '10am - 1pm', estWeight: '10.5 kg', categories: ['Glass'], distance: '1.2 km', eta: '8 mins', priority: 'normal' },
+        { id: 4, household: 'Ana S.', address: '101 Nature Rd, Tagum City', coords: [7.4555, 125.8110], status: 'pending', price: '₱85.00', windowTime: '1pm - 4pm', estWeight: '1.5 kg', categories: ['E-waste'], distance: '4.2 km', eta: '25 mins', priority: 'normal' }
+    ];
+    const mockChats = [ { id: 1, household: 'Maria C.', preview: "I'm on my way, ETA 10 minutes", time: '10:20 AM' }, { id: 2, household: 'John D.', preview: "Okay, see you soon!", time: 'Yesterday' }, { id: 4, household: 'Ana S.', preview: "Can you come around noon?", time: 'Yesterday' }];
+    const mockReviews = [ { name: 'Maria C.', rating: 5, comment: "Very fast and friendly collector!" }, { name: 'John D.', rating: 5, comment: "Polite and efficient. Highly recommended." }, { name: 'Pedro L.', rating: 4, comment: "Good service." }];
+
+    // --- SVG ICONS ---
+    const truckIconSvg = `<svg viewBox="0 0 640 512" fill="#d9534f" xmlns="http://www.w3.org/2000/svg" width="40" height="40"><path d="M624 352h-16V288c0-17.7-14.3-32-32-32h-32V128c0-17.7-14.3-32-32-32H320c-17.7 0-32 14.3-32 32v160H224c-17.7 0-32 14.3-32 32v64H16c-8.8 0-16 7.2-16 16v32c0 8.8 7.2 16 16 16h16v32c0 8.8 7.2 16 16 16h64c8.8 0 16-7.2 16-16v-32h256v32c0 8.8 7.2 16 16 16h64c8.8 0 16-7.2 16-16v-32h16c8.8 0 16-7.2 16-16v-32c0-8.8-7.2-16-16-16zM160 320h-24v-64c0-4.4 3.6-8 8-8h32c4.4 0 8 3.6 8 8v64zm32-192h128v128H192V128zm352 192v-64c0-4.4 3.6-8 8-8h32c4.4 0 8 3.6 8 8v64H544z"/></svg>`;
+    const houseIconSvg = `<svg viewBox="0 0 576 512" fill="#5cb85c" xmlns="http://www.w3.org/2000/svg" width="32" height="32"><path d="M575.8 255.5c0 18-15 32.1-32 32.1h-32l.7 160.2c.2 35.5-28.5 64.3-64 64.3H128.1c-35.3 0-64-28.7-64-64V287.6H32c-18 0-32-14-32-32.1c0-9 3-17 10-24L266.4 8c7-7 15-8 22-8s15 2 21 7L564.8 231.5c8 7 12 15 11 24z"/></svg>`;
+    const shopIconSvg = `<svg viewBox="0 0 512 512" fill="#f0ad4e" xmlns="http://www.w3.org/2000/svg" width="36" height="36"><path d="M512 32H0V96H512V32zM256 128H0V480H256V128zM512 128H288V256H512V128zM288 288H512V480H288V288z"/></svg>`;
+
+    // --- NAVIGATION ---
+    function collectorNavigateTo(pageId, id) {
+        if (collectorMap) { collectorMap.remove(); collectorMap = null; }
+
+        document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+        const targetPage = document.getElementById(pageId);
+        if (targetPage) targetPage.classList.add('active');
+
+        document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+        let navId;
+        if (pageId.includes('home')) navId = 'nav-collector-home';
+        else if (pageId.includes('chat')) navId = 'nav-collector-chat-list';
+        else if (pageId.includes('collections') || pageId.includes('transaction')) navId = 'nav-collector-collections';
+        else if (pageId.includes('profile') || pageId.includes('feedback') || pageId.includes('account-settings') || pageId.includes('notifications')) navId = 'nav-collector-profile';
+        else navId = 'nav-collector-home';
+        
+        const navItem = document.getElementById(navId);
+        if (navItem) navItem.classList.add('active');
+        
+        const bottomNav = document.querySelector('.bottom-nav');
+        const isNavHidden = pageId.includes('task-page');
+        bottomNav.classList.toggle('hidden', isNavHidden);
+        
+        // --- DATA HANDLING & RENDERING ---
+        let data;
+        if (pageId === 'collector-task-page') {
+            data = mockCollectorTasks.find(task => task.id === id);
+            if (data) { renderTaskDetails(data); initializeCollectorMap(data, 'leaflet-map-collector'); }
+        } else if (pageId === 'collector-transaction-detail-page') {
+            data = mockCollectorTasks.find(task => task.id === id);
+            if(data) renderTransactionDetails(data);
+        } else if (pageId === 'collector-conversation-page') {
+            data = mockChats.find(chat => chat.id === id);
+            if(data) renderConversation(data);
+        } else if (pageId === 'collector-home-page') {
+            renderCollectorTasks();
+        } else if (pageId === 'collector-chat-list-page') {
+            renderChatList();
+        } else if (pageId === 'collector-collections-page') {
+            renderCollectionsHistory();
+        } else if (pageId === 'collector-profile-page') {
+            renderProfile();
+        } else if (pageId === 'collector-feedback-page') {
+            renderAllFeedback();
+        } else if (pageId === 'collector-account-settings-page') {
+            renderAccountSettings();
+        } else if (pageId === 'collector-notifications-page') {
+            renderNotifications();
+        }
+    }
+
+    // --- RENDERING FUNCTIONS ---
+    function renderCollectorTasks() {
+        const container = document.getElementById('collector-task-list');
+        const pendingTasks = mockCollectorTasks.filter(t => t.status === 'pending');
+        
+        if (pendingTasks.length === 0) {
+            container.innerHTML = '<p style="text-align:center; padding: 20px; color: var(--text-secondary);">No pending collections. Great job!</p>';
+            return;
+        }
+
+        container.innerHTML = pendingTasks.map(task => {
+            const categoriesHtml = task.categories.map(cat => `<span class="category-tag">${cat}</span>`).join('');
+            const priorityClass = task.priority === 'high' ? 'high-priority' : '';
+            const priorityBanner = task.priority === 'high' ? '<div class="priority-banner"><span>HIGH PRIORITY</span></div>' : '';
+            
+            return `
+                <div class="collection-card ${priorityClass}" onclick="collectorNavigateTo('collector-task-page', ${task.id})">
+                    ${priorityBanner}
+                    <div class="card-header">
+                        <div class="card-icon">♻️</div>
+                        <div class="card-info">
+                            <h4>${task.household}</h4>
+                            <p>${task.address}</p>
+                        </div>
+                        <div class="card-price">${task.price}</div>
+                    </div>
+                    <div class="card-categories">${categoriesHtml}</div>
+                    <div class="card-details-grid">
+                        <div class="detail-item">
+                            <span class="label">WINDOW TIME</span>
+                            <span class="value">${task.windowTime}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">EST. WEIGHT</span>
+                            <span class="value">${task.estWeight}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">DISTANCE</span>
+                            <span class="value">${task.distance}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">ETA</span>
+                            <span class="value">${task.eta}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function renderTaskDetails(data) {
+        const container = document.getElementById('task-details-card');
+        const relevantChat = mockChats.find(chat => chat.household === data.household);
+        const chatId = relevantChat ? relevantChat.id : -1;
+        container.innerHTML = `<div class="household-info"><div class="household-avatar"></div><div class="household-details"><h3>${data.household}</h3><p>${data.address}</p></div><div class="contact-buttons"><button class="message-btn" onclick='collectorNavigateTo("collector-conversation-page", ${chatId})'></button><button class="call-btn"></button></div></div><div id="workflow-content"></div>`;
+        renderWorkflowState(data);
+    }
+    
+    function renderWorkflowState(task) {
+        const container = document.getElementById('workflow-content');
+        if (!container) return;
+        let statusHtml = '', buttonHtml = '';
+        switch (task.status) {
+            case 'navigating': statusHtml = `<div class="workflow-status">Navigating to ${task.household}...</div>`; buttonHtml = `<button class="workflow-action-button" onclick="updateTaskStatus(${task.id}, 'arrived')">I Have Arrived</button>`; break;
+            case 'arrived': statusHtml = `<div class="workflow-status">Take a photo as proof of collection.</div>`; buttonHtml = `<button class="workflow-action-button" onclick="updateTaskStatus(${task.id}, 'collecting')">Take Collection Photo</button>`; break;
+            case 'collecting': const itemsHtml = task.categories.map(item => `<div class="item-entry"><label>${item}</label><input type="text" placeholder="0.0 kg"></div>`).join(''); statusHtml = `<div class="photo-confirmation">✓ Proof of Collection Captured!</div><h4>Confirm Items & Weight</h4><div class="receipt-form">${itemsHtml}</div>`; buttonHtml = `<button class="workflow-action-button" onclick="updateTaskStatus(${task.id}, 'paying')">Confirm & Proceed to Payment</button>`; break;
+            case 'paying': statusHtml = `<div class="workflow-status">Take a photo as proof of payment.</div>`; buttonHtml = `<button class="workflow-action-button secondary" onclick="updateTaskStatus(${task.id}, 'completed')">Take Payment Photo</button>`; break;
+            case 'completed': statusHtml = `<div class="photo-confirmation">✓ Collection Complete!</div>`; buttonHtml = `<button class="workflow-action-button" onclick="collectorNavigateTo('collector-home-page')">Back to Home</button>`; break;
+            default: statusHtml = `<div class="workflow-status">Ready to start collection.</div>`; buttonHtml = `<button class="workflow-action-button" onclick="updateTaskStatus(${task.id}, 'navigating')">Start Navigation</button>`;
+        }
+        container.innerHTML = statusHtml + buttonHtml;
+    }
+    function updateTaskStatus(taskId, newStatus) { const task = mockCollectorTasks.find(t => t.id === taskId); if (task) { task.status = newStatus; renderTaskDetails(task); } }
+    function renderChatList() { const c = document.getElementById('collector-chat-list'); c.innerHTML = mockChats.map(ch => `<div class="chat-list-item" onclick="collectorNavigateTo('collector-conversation-page', ${ch.id})"><div class="chat-avatar"></div><div class="chat-info"><div class="chat-name">${ch.household}</div><div class="chat-preview">${ch.preview}</div></div><div class="chat-meta"><div class="chat-time">${ch.time}</div></div></div>`).join(''); }
+    function renderConversation(data) { document.getElementById('conversation-partner-name').textContent = data ? data.household : 'Household'; const c = document.getElementById('chat-container'); c.innerHTML = `<div class="message-wrapper contact-message-wrapper"><div class="chat-message contact-message">Yes, that works. The items are by the gate.</div></div><div class="message-wrapper user-message-wrapper"><div class="chat-message user-message">Okay, I'm on my way. See you in 15.</div></div>`; }
+    function renderCollectionsHistory() { const c = document.getElementById('collection-history-list'); c.innerHTML = mockCollectorTasks.filter(t => t.status === 'completed').map(t => { return `<div class="transaction-item" onclick="collectorNavigateTo('collector-transaction-detail-page', ${t.id})"><div class="transaction-icon"></div><div class="transaction-details"><h4>${t.household}</h4><p>${new Date().toLocaleDateString()}</p></div><div class="transaction-amount">${t.price}</div></div>` }).join(''); }
+    function renderTransactionDetails(data) { const c = document.querySelector('#collector-transaction-detail-page .main-content'); const i = data.categories.map(it => `<div class="detail-row"><span class="label">${it}</span><span class="value">${data.estWeight}</span></div>`).join(''); c.innerHTML = `<div class="detail-card"><div class="detail-row"><span class="label">Household</span><span class="value">${data.household}</span></div><div class="detail-row"><span class="label">Address</span><span class="value">${data.address}</span></div><div class="detail-row"><span class="label">Status</span><span class="value">Completed</span></div></div><h3 class="section-title" style="padding-left: 0;">Items Collected</h3><div class="detail-card">${i}</div>`; }
+    function renderProfile() {
+        const container = document.getElementById('profile-settings-container');
+        container.innerHTML = `
+            <div class="settings-group">
+                <div class="settings-item" onclick="collectorNavigateTo('collector-account-settings-page')">
+                    <div class="settings-icon-wrapper account"><span class="settings-icon">👤</span></div>
+                    <span>Account</span>
+                    <span class="chevron">›</span>
+                </div>
+                <div class="settings-item" onclick="collectorNavigateTo('collector-notifications-page')">
+                    <div class="settings-icon-wrapper notifications"><span class="settings-icon">🔔</span></div>
+                    <span>Notifications</span>
+                    <span class="chevron">›</span>
+                </div>
+                 <div class="settings-item" onclick="collectorNavigateTo('collector-feedback-page')">
+                    <div class="settings-icon-wrapper feedback"><span class="settings-icon">💬</span></div>
+                    <span>Feedback</span>
+                    <span class="chevron">›</span>
+                </div>
+            </div>
+        `;
+    }
+    function renderAllFeedback() {
+        const container = document.getElementById('all-feedback-list');
+        container.innerHTML = mockReviews.map(r => {
+            let s = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
+            return `<div class="review-card"><div class="review-header"><div class="reviewer-avatar"></div><div class="reviewer-info"><div class="name">${r.name}</div><div class="star-rating">${s}</div></div></div><p class="review-body">"${r.comment}"</p></div>`
+        }).join('');
+    }
+    function renderAccountSettings() {
+        const container = document.getElementById('account-settings-content');
+        container.innerHTML = `
+            <div class="form-card">
+                <div class="form-header">
+                    <h3>Profile Information</h3>
+                    <button>Save</button>
+                </div>
+                <div class="form-group">
+                    <label for="name">Name</label>
+                    <input type="text" id="name" value="Juan Santos">
+                </div>
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" value="juan.santos@email.com">
+                </div>
+                <div class="form-group">
+                    <label for="phone">Phone Number</label>
+                    <input type="tel" id="phone" value="+63 912 345 6789">
+                </div>
+                <div class="form-group">
+                    <label for="location">Location</label>
+                    <input type="text" id="location" value="Tagum City, Davao Region" disabled>
+                </div>
+            </div>
+            <div class="form-card">
+                <div class="form-header">
+                    <h3>Security</h3>
+                    <button>Update Password</button>
+                </div>
+                <div class="form-group">
+                    <label for="old-password">Old Password</label>
+                    <input type="password" id="old-password" placeholder="Enter old password">
+                </div>
+                <div class="form-group">
+                    <label for="new-password">New Password</label>
+                    <input type="password" id="new-password" placeholder="Enter new password">
+                </div>
+            </div>
+            <button class="logout-btn">Log Out</button>
+        `;
+    }
+    function renderNotifications() {
+        const container = document.getElementById('notifications-content');
+        container.innerHTML = `<p style="text-align:center; padding: 40px 24px; color: var(--text-secondary);">Notification settings will be available here.</p>`;
+    }
+    
+    // --- MAPPING FUNCTIONS ---
+    function initializeMap(mapId, center, zoom, addMarkersCallback) {
+        if (collectorMap) { collectorMap.remove(); collectorMap = null; }
+        const mapContainer = document.getElementById(mapId);
+        if (!mapContainer) { console.error(`Map container with id "${mapId}" not found.`); return; }
+        collectorMap = L.map(mapId, { zoomControl: true }).setView(center, zoom);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors' }).addTo(collectorMap);
+        setTimeout(() => { if (collectorMap) { collectorMap.invalidateSize(true); } }, 100);
+        if (addMarkersCallback) { addMarkersCallback(collectorMap); }
+    }
+    function initializeCollectorMap(task, mapId) {
+        initializeMap(mapId, task.coords, 14, (map) => {
+            const collectorLocation = [7.4600, 125.8050];
+            const homeIcon = L.divIcon({ html: houseIconSvg, className: 'leaflet-div-icon', iconSize: [32, 32], iconAnchor: [16, 32] });
+            const collectorIcon = L.divIcon({ html: truckIconSvg, className: 'leaflet-div-icon', iconSize: [40, 40], iconAnchor: [20, 20] });
+            L.marker(task.coords, { icon: homeIcon }).addTo(map);
+            L.marker(collectorLocation, { icon: collectorIcon }).addTo(map);
+            const routeLine = L.polyline([collectorLocation, task.coords], {color: 'var(--primary-blue)', weight: 4, opacity: 0.8}).addTo(map);
+            map.fitBounds(routeLine.getBounds().pad(0.2));
+        });
+    }
+
+    // --- AVAILABILITY ---
+    function setAvailability(available) {
+        isAvailable = available;
+        const greetingMessageEl = document.getElementById('greeting-message');
+        const navItemsEl = document.querySelector('.nav-items');
+        const powerBtnEl = document.getElementById('power-btn');
+        const taskListEl = document.getElementById('collector-task-list');
+
+        if (isAvailable) {
+            greetingMessageEl.textContent = 'You have 3 collections today.';
+            navItemsEl.className = 'nav-items enabled';
+            powerBtnEl.className = 'power-btn-inner enabled';
+            taskListEl.style.display = 'block';
+        } else {
+            greetingMessageEl.textContent = 'Enable the available for collection first.';
+            navItemsEl.className = 'nav-items disabled';
+            powerBtnEl.className = 'power-btn-inner disabled';
+            taskListEl.style.display = 'none';
+        }
+    }
+
+    // --- INITIALIZATION ---
+    window.onload = function() {
+        collectorNavigateTo('collector-home-page');
+        setAvailability(true);
+
+        document.getElementById('power-btn').addEventListener('click', () => {
+            setAvailability(!isAvailable);
+        });
+    };
+</script>
+</body>
+</html>

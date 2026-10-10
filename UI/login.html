@@ -1,0 +1,1346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>B.B.P. Tracker - Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-green: #10B981;
+            --dark-green: #059669;
+            --primary-blue: #3B82F6;
+            --dark-blue: #2563EB;
+            --primary-orange: #F59E0B;
+            --background-light: #f8fafc;
+            --background-dark: #f1f5f9;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            --success-color: #16a34a;
+            --error-color: #ef4444;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #e5e7eb;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            color: var(--text-primary);
+            padding: 20px 0;
+        }
+
+        .phone-container {
+            width: 375px;
+            height: 812px;
+            background: var(--background-light);
+            border-radius: 40px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .page {
+            display: none;
+            flex-direction: column;
+            flex-grow: 1;
+            height: 100%;
+            position: relative;
+        }
+        .page.active { display: flex; }
+
+        .main-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 20px 24px;
+        }
+        .main-content::-webkit-scrollbar { display: none; }
+        .main-content { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* LOGIN PAGE STYLES */
+        .login-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100%;
+            padding: 40px 0;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .app-logo {
+            font-size: 72px;
+            margin-bottom: 24px;
+            filter: drop-shadow(0 4px 12px rgba(0,0,0,0.15));
+        }
+        
+        .app-title {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            line-height: 1.2;
+        }
+        
+        .app-subtitle {
+            font-size: 16px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .login-form {
+            width: 100%;
+            background: white;
+            border-radius: 24px;
+            padding: 32px 28px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 24px;
+        }
+
+        .form-title {
+            font-size: 24px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .form-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 16px 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            font-family: 'Inter';
+            font-size: 16px;
+            transition: all 0.2s ease;
+            background: #fafbfc;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-green);
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+            background: white;
+        }
+
+        .forgot-password {
+            text-align: right;
+            margin-bottom: 32px;
+        }
+
+        .forgot-password a {
+            color: var(--primary-green);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .forgot-password a:hover {
+            text-decoration: underline;
+        }
+
+        .login-btn {
+            width: 100%;
+            background: linear-gradient(135deg, var(--primary-green) 0%, var(--dark-green) 100%);
+            color: white;
+            border: none;
+            padding: 18px;
+            border-radius: 16px;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.25);
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);
+        }
+
+        .login-btn:active {
+            transform: translateY(0);
+        }
+
+        .signup-section {
+            background: white;
+            border-radius: 20px;
+            padding: 24px;
+            text-align: center;
+            box-shadow: var(--card-shadow);
+        }
+
+        .signup-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        .role-selection {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .role-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 20px;
+            background: var(--background-light);
+            border: 2px solid transparent;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+        }
+
+        .role-btn:hover {
+            background: #f1f5f9;
+            border-color: var(--primary-green);
+        }
+
+        .role-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .role-info {
+            flex-grow: 1;
+        }
+
+        .role-name {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 2px;
+        }
+
+        .role-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        /* HEADER STYLES */
+        .header {
+            background: linear-gradient(135deg, var(--primary-green) 0%, var(--dark-green) 100%);
+            padding: 50px 24px 24px;
+            color: white;
+            text-align: center;
+            border-bottom-left-radius: 24px;
+            border-bottom-right-radius: 24px;
+            flex-shrink: 0;
+        }
+        .header.blue {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--dark-blue) 100%);
+        }
+        .header.orange {
+            background: linear-gradient(135deg, var(--primary-orange) 0%, #D97706 100%);
+        }
+        
+        .header .app-title {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+            font-weight: 500;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 50px;
+            left: 24px;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        /* FORM STYLES */
+        .form-section {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: var(--card-shadow);
+        }
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: var(--text-primary);
+        }
+
+        .form-section .form-group {
+            margin-bottom: 16px;
+        }
+        .form-section .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+        .form-section .form-group input,
+        .form-section .form-group select,
+        .form-section .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            font-family: 'Inter';
+            font-size: 16px;
+            transition: border-color 0.2s ease;
+        }
+        .form-section .form-group input:focus,
+        .form-section .form-group select:focus,
+        .form-section .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .upload-area {
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.2s ease;
+        }
+        .upload-area:hover {
+            border-color: var(--primary-blue);
+        }
+        .upload-icon {
+            font-size: 32px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+        .upload-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .progress-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding: 0 8px;
+        }
+        .progress-step {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            position: relative;
+        }
+        .progress-step.active {
+            background: var(--primary-green);
+            color: white;
+        }
+        .progress-step.completed {
+            background: var(--success-color);
+            color: white;
+        }
+        .progress-step::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 100%;
+            width: 60px;
+            height: 2px;
+            background: #e2e8f0;
+            transform: translateY(-50%);
+        }
+        .progress-step:last-child::after {
+            display: none;
+        }
+        .progress-step.completed::after {
+            background: var(--success-color);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+        .btn {
+            flex: 1;
+            padding: 16px;
+            border: none;
+            border-radius: 16px;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        .btn-primary {
+            background: var(--primary-green);
+            color: white;
+        }
+        .btn-primary.blue {
+            background: var(--primary-blue);
+        }
+        .btn-primary:hover {
+            background: var(--dark-green);
+        }
+        .btn-primary.blue:hover {
+            background: var(--dark-blue);
+        }
+        .btn-secondary {
+            background: var(--background-dark);
+            color: var(--text-primary);
+        }
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+
+        .status-card {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .status-card.pending {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+        }
+        .status-card.approved {
+            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+        }
+
+        .status-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+        .status-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .status-message {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .junkshop-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .junkshop-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: border-color 0.2s ease;
+        }
+        .junkshop-item:hover {
+            border-color: var(--primary-blue);
+        }
+        .junkshop-item.selected {
+            border-color: var(--primary-blue);
+            background: #f0f9ff;
+        }
+        .junkshop-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: var(--primary-green);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        .junkshop-info h4 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+        .junkshop-info p {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .welcome-section {
+            text-align: center;
+            padding: 32px 0;
+        }
+        .welcome-icon {
+            font-size: 64px;
+            margin-bottom: 24px;
+        }
+        .welcome-title {
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+        .welcome-subtitle {
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-container">
+        
+        <!-- LOGIN PAGE -->
+        <div id="login-page" class="page active">
+            <div class="main-content">
+                <div class="login-container">
+                    <!-- App Header -->
+                    <div class="login-header">
+                        <div class="app-logo">♻️</div>
+                        <div class="app-title">B.B.P. Tracker</div>
+                        <div class="app-subtitle">Turn Trash into Cash</div>
+                    </div>
+
+                    <!-- Login Form -->
+                    <div class="login-form">
+                        <div class="form-title">Welcome Back</div>
+                        <div class="form-subtitle">Sign in to your account</div>
+                        
+                        <div class="form-group">
+                            <label for="login-email">Email Address</label>
+                            <input type="email" id="login-email" placeholder="your.email@example.com">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="login-password">Password</label>
+                            <input type="password" id="login-password" placeholder="Enter your password">
+                        </div>
+                        
+                        <div class="forgot-password">
+                            <a href="#" onclick="alert('Forgot password functionality')">Forgot Password?</a>
+                        </div>
+                        
+                        <button class="login-btn" onclick="alert('Login functionality - would redirect to dashboard')">
+                            Sign In
+                        </button>
+                    </div>
+
+                    <!-- Sign Up Section -->
+                    <div class="signup-section">
+                        <div class="signup-text">Don't have an account? Choose your role:</div>
+                        
+                        <div class="role-selection">
+                            <div class="role-btn" onclick="navigateTo('household-register')">
+                                <div class="role-icon">🏠</div>
+                                <div class="role-info">
+                                    <div class="role-name">Household</div>
+                                    <div class="role-desc">Sell your recyclables</div>
+                                </div>
+                            </div>
+                            
+                            <div class="role-btn" onclick="navigateTo('junkshop-register-1')">
+                                <div class="role-icon">🏪</div>
+                                <div class="role-info">
+                                    <div class="role-name">Junk Shop</div>
+                                    <div class="role-desc">Manage your business</div>
+                                </div>
+                            </div>
+                            
+                            <div class="role-btn" onclick="navigateTo('collector-register-1')">
+                                <div class="role-icon">🚛</div>
+                                <div class="role-info">
+                                    <div class="role-name">Collector</div>
+                                    <div class="role-desc">Join collection network</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- JUNK SHOP REGISTRATION - STEP 1 -->
+        <div id="junkshop-register-1" class="page">
+            <div class="header">
+                <div class="back-btn" onclick="navigateTo('login-page')">←</div>
+                <div class="app-title">🏪 Junk Shop Registration</div>
+                <div class="subtitle">Step 1 of 4: Business Information</div>
+            </div>
+            <div class="main-content">
+                <div class="progress-bar">
+                    <div class="progress-step active">1</div>
+                    <div class="progress-step">2</div>
+                    <div class="progress-step">3</div>
+                    <div class="progress-step">4</div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-title">Business Details</div>
+                    <div class="form-group">
+                        <label for="business-name">Business Name</label>
+                        <input type="text" id="business-name" placeholder="e.g., Green Earth Junk Shop">
+                    </div>
+                    <div class="form-group">
+                        <label for="owner-name">Owner Name</label>
+                        <input type="text" id="owner-name" placeholder="Your full name">
+                    </div>
+                    <div class="form-group">
+                        <label for="business-phone">Business Phone</label>
+                        <input type="tel" id="business-phone" placeholder="+63 912 345 6789">
+                    </div>
+                    <div class="form-group">
+                        <label for="business-email">Business Email</label>
+                        <input type="email" id="business-email" placeholder="contact@yourbusiness.com">
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-title">Business Address</div>
+                    <div class="form-group">
+                        <label for="street-address">Street Address</label>
+                        <input type="text" id="street-address" placeholder="Complete street address">
+                    </div>
+                    <div class="form-group">
+                        <label for="city">City/Municipality</label>
+                        <input type="text" id="city" placeholder="e.g., Tagum City">
+                    </div>
+                    <div class="form-group">
+                        <label for="province">Province</label>
+                        <select id="province">
+                            <option>Select Province</option>
+                            <option>Davao del Norte</option>
+                            <option>Davao de Oro</option>
+                            <option>Davao del Sur</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" onclick="navigateTo('login-page')">Back</button>
+                    <button class="btn btn-primary" onclick="navigateTo('junkshop-register-2')">Continue</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- JUNK SHOP REGISTRATION - STEP 2 -->
+        <div id="junkshop-register-2" class="page">
+            <div class="header">
+                <div class="back-btn" onclick="navigateTo('junkshop-register-1')">←</div>
+                <div class="app-title">🏪 Junk Shop Registration</div>
+                <div class="subtitle">Step 2 of 4: Business Verification</div>
+            </div>
+            <div class="main-content">
+                <div class="progress-bar">
+                    <div class="progress-step completed">1</div>
+                    <div class="progress-step active">2</div>
+                    <div class="progress-step">3</div>
+                    <div class="progress-step">4</div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-title">Required Documents</div>
+                    <div class="form-group">
+                        <label>Business Permit</label>
+                        <div class="upload-area">
+                            <div class="upload-icon">📄</div>
+                            <div class="upload-text">Upload business permit or registration</div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Valid ID (Owner)</label>
+                        <div class="upload-area">
+                            <div class="upload-icon">🆔</div>
+                            <div class="upload-text">Upload valid government ID</div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Proof of Address</label>
+                        <div class="upload-area">
+                            <div class="upload-icon">🏠</div>
+                            <div class="upload-text">Upload utility bill or barangay certificate</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-title">Business Information</div>
+                    <div class="form-group">
+                        <label for="years-operation">Years in Operation</label>
+                        <select id="years-operation">
+                            <option>Select experience</option>
+                            <option>Less than 1 year</option>
+                            <option>1-3 years</option>
+                            <option>3-5 years</option>
+                            <option>5+ years</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="monthly-volume">Estimated Monthly Volume (kg)</label>
+                        <input type="number" id="monthly-volume" placeholder="e.g., 1000">
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" onclick="navigateTo('junkshop-register-1')">Back</button>
+                    <button class="btn btn-primary" onclick="navigateTo('junkshop-register-3')">Continue</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- JUNK SHOP REGISTRATION - STEP 3 -->
+        <div id="junkshop-register-3" class="page">
+            <div class="header">
+                <div class="back-btn" onclick="navigateTo('junkshop-register-2')">←</div>
+                <div class="app-title">🏪 Junk Shop Registration</div>
+                <div class="subtitle">Step 3 of 4: Initial Setup</div>
+            </div>
+            <div class="main-content">
+                <div class="progress-bar">
+                    <div class="progress-step completed">1</div>
+                    <div class="progress-step completed">2</div>
+                    <div class="progress-step active">3</div>
+                    <div class="progress-step">4</div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-title">Service Area</div>
+                    <div class="form-group">
+                        <label for="service-radius">Collection Radius (km)</label>
+                        <select id="service-radius">
+                            <option>Select radius</option>
+                            <option>5 km</option>
+                            <option>10 km</option>
+                            <option>15 km</option>
+                            <option>20 km</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="covered-barangays">Covered Barangays (Optional)</label>
+                        <textarea id="covered-barangays" rows="3" placeholder="List specific barangays you serve"></textarea>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-title">Initial Material Pricing (per kg)</div>
+                    <div class="form-group">
+                        <label for="plastic-price">Plastic Bottles</label>
+                        <input type="number" id="plastic-price" placeholder="15.00" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label for="aluminum-price">Aluminum Cans</label>
+                        <input type="number" id="aluminum-price" placeholder="35.00" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label for="cardboard-price">Cardboard</label>
+                        <input type="number" id="cardboard-price" placeholder="5.00" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label for="paper-price">Paper</label>
+                        <input type="number" id="paper-price" placeholder="4.00" step="0.01">
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" onclick="navigateTo('junkshop-register-2')">Back</button>
+                    <button class="btn btn-primary" onclick="navigateTo('junkshop-register-4')">Continue</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- JUNK SHOP REGISTRATION - STEP 4 -->
+        <div id="junkshop-register-4" class="page">
+            <div class="header">
+                <div class="back-btn" onclick="navigateTo('junkshop-register-3')">←</div>
+                <div class="app-title">🏪 Junk Shop Registration</div>
+                <div class="subtitle">Step 4 of 4: Account Setup</div>
+            </div>
+            <div class="main-content">
+                <div class="progress-bar">
+                    <div class="progress-step completed">1</div>
+                    <div class="progress-step completed">2</div>
+                    <div class="progress-step completed">3</div>
+                    <div class="progress-step active">4</div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-title">Login Credentials</div>
+                    <div class="form-group">
+                        <label for="js-email">Email Address</label>
+                        <input type="email" id="js-email" placeholder="Your login email">
+                    </div>
+                    <div class="form-group">
+                        <label for="js-password">Password</label>
+                        <input type="password" id="js-password" placeholder="Create a strong password">
+                    </div>
+                    <div class="form-group">
+                        <label for="js-confirm-password">Confirm Password</label>
+                        <input type="password" id="js-confirm-password" placeholder="Confirm your password">
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-title">Terms & Conditions</div>
+                    <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.5;">
+                        By registering, you agree to:
+                        <ul style="margin: 12px 0 0 20px;">
+                            <li>Provide accurate business information</li>
+                            <li>Comply with local waste management regulations</li>
+                            <li>Maintain fair pricing for households</li>
+                            <li>Properly manage and supervise collectors</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" onclick="navigateTo('junkshop-register-3')">Back</button>
+                    <button class="btn btn-primary" onclick="navigateTo('junkshop-pending')">Submit Application</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- JUNK SHOP PENDING APPROVAL -->
+        <div id="junkshop-pending" class="page">
+            <div class="header">
+                <div class="app-title">🏪 Application Submitted</div>
+                <div class="subtitle">We're reviewing your application</div>
+            </div>
+            <div class="main-content">
+                <div class="status-card pending">
+                    <div class="status-icon">⏳</div>
+                    <div class="status-title">Under Review</div>
+                    <div class="status-message">
+                        Your junk shop application is being reviewed by our team. This typically takes 1-2 business days.
+                        <br><br>
+                        We'll notify you via email once your application is approved.
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-title">What's Next?</div>
+                    <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.6;">
+                        1. <strong>Document Verification</strong> - We'll verify your submitted documents<br>
+                        2. <strong>Business Review</strong> - Our team will review your business information<br>
+                        3. <strong>Account Activation</strong> - Once approved, you can start using the platform<br>
+                        4. <strong>Collector Invitations</strong> - You can then invite workers to join your team
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="navigateTo('login-page')">Back to Login</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- COLLECTOR REGISTRATION - STEP 1 -->
+        <div id="collector-register-1" class="page">
+            <div class="header blue">
+                <div class="back-btn" onclick="navigateTo('login-page')">←</div>
+                <div class="app-title">🚛 Collector Application</div>
+                <div class="subtitle">Step 1 of 5: Personal Information</div>
+            </div>
+            <div class="main-content">
+                <div class="progress-bar">
+                    <div class="progress-step active">1</div>
+                    <div class="progress-step">2</div>
+                    <div class="progress-step">3</div>
+                    <div class="progress-step">4</div>
+                    <div class="progress-step">5</div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-title">Personal Details</div>
+                    <div class="form-group">
+                        <label for="full-name">Full Name</label>
+                        <input type="text" id="full-name" placeholder="Your complete name">
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Phone Number</label>
+                        <input type="tel" id="phone" placeholder="+63 912 345 6789">
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" placeholder="your.email@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="age">Age</label>
+                        <input type="number" id="age" placeholder="25" min="18" max="65">
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-title">Address Information</div>
+                    <div class="form-group">
+                        <label for="collector-address">Home Address</label>
+                        <input type="text" id="collector-address" placeholder="Complete home address">
+                    </div>
+                    <div class="form-group">
+                        <label for="collector-city">City/Municipality</label>
+                        <input type="text" id="collector-city" placeholder="e.g., Tagum City">
+                    </div>
+                    <div class="form-group">
+                        <label for="collector-province">Province</label>
+                        <select id="collector-province">
+                            <option>Select Province</option>
+                            <option>Davao del Norte</option>
+                            <option>Davao de Oro</option>
+                            <option>Davao del Sur</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" onclick="navigateTo('login-page')">Back</button>
+                    <button class="btn btn-primary blue" onclick="navigateTo('collector-register-2')">Continue</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- COLLECTOR REGISTRATION - STEP 2 -->
+        <div id="collector-register-2" class="page">
+            <div class="header blue">
+                <div class="back-btn" onclick="navigateTo('collector-register-1')">←</div>
+                <div class="app-title">🚛 Collector Application</div>
+                <div class="subtitle">Step 2 of 5: Choose Junk Shop</div>
+            </div>
+            <div class="main-content">
+                <div class="progress-bar">
+                    <div class="progress-step completed">1</div>
+                    <div class="progress-step active">2</div>
+                    <div class="progress-step">3</div>
+                    <div class="progress-step">4</div>
+                    <div class="progress-step">5</div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-title">Available Junk Shops in Your Area</div>
+                    <div class="junkshop-list">
+                        <div class="junkshop-item selected" onclick="selectJunkshop(this)">
+                            <div class="junkshop-avatar">🏪</div>
+                            <div class="junkshop-info">
+                                <h4>Green Earth Junk Shop</h4>
+                                <p>Tagum City Center • 2.5 km away • 3 collectors</p>
+                            </div>
+                        </div>
+                        <div class="junkshop-item" onclick="selectJunkshop(this)">
+                            <div class="junkshop-avatar">🏪</div>
+                            <div class="junkshop-info">
+                                <h4>EcoWaste Solutions</h4>
+                                <p>Apokon, Tagum • 4.1 km away • 5 collectors</p>
+                            </div>
+                        </div>
+                        <div class="junkshop-item" onclick="selectJunkshop(this)">
+                            <div class="junkshop-avatar">🏪</div>
+                            <div class="junkshop-info">
+                                <h4>Juan's Recyclables</h4>
+                                <p>Mankilam, Tagum • 6.8 km away • 2 collectors</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-title">Preferred Work Areas</div>
+                    <div class="form-group">
+                        <label for="preferred-areas">Areas you're familiar with (Optional)</label>
+                        <textarea id="preferred-areas" rows="3" placeholder="e.g., Tagum City Center, Apokon, Mankilam"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="availability">Availability</label>
+                        <select id="availability">
+                            <option>Full-time (Monday-Saturday)</option>
+                            <option>Part-time (Flexible schedule)</option>
+                            <option>Weekends only</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" onclick="navigateTo('collector-register-1')">Back</button>
+                    <button class="btn btn-primary blue" onclick="navigateTo('collector-register-3')">Continue</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- COLLECTOR REGISTRATION - STEP 3 -->
+        <div id="collector-register-3" class="page">
+            <div class="header blue">
+                <div class="back-btn" onclick="navigateTo('collector-register-2')">←</div>
+                <div class="app-title">🚛 Collector Application</div>
+                <div class="subtitle">Step 3 of 5: Experience & Documents</div>
+            </div>
+            <div class="main-content">
+                <div class="progress-bar">
+                    <div class="progress-step completed">1</div>
+                    <div class="progress-step completed">2</div>
+                    <div class="progress-step active">3</div>
+                    <div class="progress-step">4</div>
+                    <div class="progress-step">5</div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-title">Work Experience</div>
+                    <div class="form-group">
+                        <label for="experience">Previous Experience</label>
+                        <select id="experience">
+                            <option>No experience</option>
+                            <option>Less than 1 year</option>
+                            <option>1-2 years</option>
+                            <option>2-5 years</option>
+                            <option>5+ years</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="transport">Transportation</label>
+                        <select id="transport">
+                            <option>Motorcycle</option>
+                            <option>Tricycle</option>
+                            <option>Jeepney</option>
+                            <option>Pickup Truck</option>
+                            <option>Walking/Bicycle</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="additional-info">Additional Information (Optional)</label>
+                        <textarea id="additional-info" rows="3" placeholder="Tell us about your experience with waste collection, driving skills, etc."></textarea>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-title">Required Documents</div>
+                    <div class="form-group">
+                        <label>Valid Government ID</label>
+                        <div class="upload-area">
+                            <div class="upload-icon">🆔</div>
+                            <div class="upload-text">Upload valid ID (front and back)</div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Barangay Clearance</label>
+                        <div class="upload-area">
+                            <div class="upload-icon">📜</div>
+                            <div class="upload-text">Upload barangay clearance</div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Police Clearance (Optional)</label>
+                        <div class="upload-area">
+                            <div class="upload-icon">👮</div>
+                            <div class="upload-text">Upload police clearance (recommended)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" onclick="navigateTo('collector-register-2')">Back</button>
+                    <button class="btn btn-primary blue" onclick="navigateTo('collector-register-4')">Continue</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- COLLECTOR REGISTRATION - STEP 4 -->
+        <div id="collector-register-4" class="page">
+            <div class="header blue">
+                <div class="back-btn" onclick="navigateTo('collector-register-3')">←</div>
+                <div class="app-title">🚛 Collector Application</div>
+                <div class="subtitle">Step 4 of 5: Account Setup</div>
+            </div>
+            <div class="main-content">
+                <div class="progress-bar">
+                    <div class="progress-step completed">1</div>
+                    <div class="progress-step completed">2</div>
+                    <div class="progress-step completed">3</div>
+                    <div class="progress-step active">4</div>
+                    <div class="progress-step">5</div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-title">Create Your Account</div>
+                    <div class="form-group">
+                        <label for="collector-email">Email Address</label>
+                        <input type="email" id="collector-email" placeholder="Your login email">
+                    </div>
+                    <div class="form-group">
+                        <label for="collector-password">Password</label>
+                        <input type="password" id="collector-password" placeholder="Create a strong password">
+                    </div>
+                    <div class="form-group">
+                        <label for="collector-confirm-password">Confirm Password</label>
+                        <input type="password" id="collector-confirm-password" placeholder="Confirm your password">
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-title">Emergency Contact</div>
+                    <div class="form-group">
+                        <label for="emergency-name">Contact Name</label>
+                        <input type="text" id="emergency-name" placeholder="Family member or friend">
+                    </div>
+                    <div class="form-group">
+                        <label for="emergency-phone">Contact Phone</label>
+                        <input type="tel" id="emergency-phone" placeholder="+63 912 345 6789">
+                    </div>
+                    <div class="form-group">
+                        <label for="emergency-relationship">Relationship</label>
+                        <select id="emergency-relationship">
+                            <option>Spouse</option>
+                            <option>Parent</option>
+                            <option>Sibling</option>
+                            <option>Friend</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" onclick="navigateTo('collector-register-3')">Back</button>
+                    <button class="btn btn-primary blue" onclick="navigateTo('collector-register-5')">Continue</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- COLLECTOR REGISTRATION - STEP 5 -->
+        <div id="collector-register-5" class="page">
+            <div class="header blue">
+                <div class="back-btn" onclick="navigateTo('collector-register-4')">←</div>
+                <div class="app-title">🚛 Collector Application</div>
+                <div class="subtitle">Step 5 of 5: Review & Submit</div>
+            </div>
+            <div class="main-content">
+                <div class="progress-bar">
+                    <div class="progress-step completed">1</div>
+                    <div class="progress-step completed">2</div>
+                    <div class="progress-step completed">3</div>
+                    <div class="progress-step completed">4</div>
+                    <div class="progress-step active">5</div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-title">Application Summary</div>
+                    <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.6;">
+                        <p><strong>Name:</strong> Juan Santos</p>
+                        <p><strong>Phone:</strong> +63 912 345 6789</p>
+                        <p><strong>Preferred Junk Shop:</strong> Green Earth Junk Shop</p>
+                        <p><strong>Experience:</strong> 2-5 years</p>
+                        <p><strong>Transportation:</strong> Motorcycle</p>
+                        <p><strong>Availability:</strong> Full-time (Monday-Saturday)</p>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-title">Terms & Conditions</div>
+                    <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.5;">
+                        By submitting this application, you agree to:
+                        <ul style="margin: 12px 0 0 20px;">
+                            <li>Provide accurate personal information</li>
+                            <li>Follow safety protocols during collections</li>
+                            <li>Treat customers with respect and professionalism</li>
+                            <li>Complete assigned collections efficiently</li>
+                            <li>Undergo background verification by the junk shop</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" onclick="navigateTo('collector-register-4')">Back</button>
+                    <button class="btn btn-primary blue" onclick="navigateTo('collector-pending')">Submit Application</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- COLLECTOR PENDING APPROVAL -->
+        <div id="collector-pending" class="page">
+            <div class="header blue">
+                <div class="app-title">🚛 Application Submitted</div>
+                <div class="subtitle">Waiting for junk shop approval</div>
+            </div>
+            <div class="main-content">
+                <div class="status-card pending">
+                    <div class="status-icon">📋</div>
+                    <div class="status-title">Under Review</div>
+                    <div class="status-message">
+                        Your application has been sent to Green Earth Junk Shop for review. They will evaluate your application and may contact you for an interview.
+                        <br><br>
+                        You'll receive a notification once they make a decision.
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-title">What Happens Next?</div>
+                    <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.6;">
+                        1. <strong>Document Review</strong> - Junk shop reviews your documents<br>
+                        2. <strong>Background Check</strong> - Verification of your information<br>
+                        3. <strong>Interview</strong> - They may call you for a brief interview<br>
+                        4. <strong>Decision</strong> - You'll get approved or receive feedback<br>
+                        5. <strong>Onboarding</strong> - If approved, you'll receive training materials
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-primary blue" onclick="navigateTo('login-page')">Back to Login</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- HOUSEHOLD REGISTRATION -->
+        <div id="household-register" class="page">
+            <div class="header orange">
+                <div class="back-btn" onclick="navigateTo('login-page')">←</div>
+                <div class="app-title">🏠 Household Registration</div>
+                <div class="subtitle">Quick & easy registration</div>
+            </div>
+            <div class="main-content">
+                <div class="welcome-section">
+                    <div class="welcome-icon">🏠</div>
+                    <div class="welcome-title">Welcome to B.B.P. Tracker!</div>
+                    <div class="welcome-subtitle">Start earning money from your recyclable waste in just a few minutes.</div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-title">Personal Information</div>
+                    <div class="form-group">
+                        <label for="household-name">Full Name</label>
+                        <input type="text" id="household-name" placeholder="Your full name">
+                    </div>
+                    <div class="form-group">
+                        <label for="household-phone">Phone Number</label>
+                        <input type="tel" id="household-phone" placeholder="+63 912 345 6789">
+                    </div>
+                    <div class="form-group">
+                        <label for="household-email">Email Address</label>
+                        <input type="email" id="household-email" placeholder="your.email@example.com">
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-title">Address Information</div>
+                    <div class="form-group">
+                        <label for="household-address">Home Address</label>
+                        <input type="text" id="household-address" placeholder="Complete home address">
+                    </div>
+                    <div class="form-group">
+                        <label for="household-city">City/Municipality</label>
+                        <input type="text" id="household-city" placeholder="e.g., Tagum City">
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-title">Account Setup</div>
+                    <div class="form-group">
+                        <label for="household-password">Password</label>
+                        <input type="password" id="household-password" placeholder="Create a strong password">
+                    </div>
+                    <div class="form-group">
+                        <label for="household-confirm-password">Confirm Password</label>
+                        <input type="password" id="household-confirm-password" placeholder="Confirm your password">
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" onclick="navigateTo('login-page')">Back</button>
+                    <button class="btn btn-primary" style="background: var(--primary-orange);" onclick="navigateTo('household-welcome')">Create Account</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- HOUSEHOLD WELCOME -->
+        <div id="household-welcome" class="page">
+            <div class="header orange">
+                <div class="app-title">🏠 Welcome!</div>
+                <div class="subtitle">Account created successfully</div>
+            </div>
+            <div class="main-content">
+                <div class="status-card approved">
+                    <div class="status-icon">🎉</div>
+                    <div class="status-title">Account Ready!</div>
+                    <div class="status-message">
+                        Your household account has been created successfully. You can now start posting your recyclable waste and earning money!
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-title">Getting Started</div>
+                    <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.6;">
+                        1. <strong>Take Photos</strong> - Use our AI scanner to identify your waste<br>
+                        2. <strong>Choose Junk Shop</strong> - Select from available shops in your area<br>
+                        3. <strong>Schedule Pickup</strong> - Set a convenient time for collection<br>
+                        4. <strong>Get Paid</strong> - Receive money for your recyclables
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-primary" style="background: var(--primary-orange);">Start Using App</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        function navigateTo(pageId) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            // Show target page
+            document.getElementById(pageId).classList.add('active');
+        }
+
+        function selectJunkshop(element) {
+            // Remove selected class from all items
+            document.querySelectorAll('.junkshop-item').forEach(item => item.classList.remove('selected'));
+            // Add selected class to clicked item
+            element.classList.add('selected');
+        }
+    </script>
+</body>
+</html>

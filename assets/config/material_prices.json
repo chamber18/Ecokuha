@@ -1,0 +1,85 @@
+﻿{
+  "categories": [
+    {
+      "id": "glass",
+      "name": "Glass Materials",
+      "icon": "bottle",
+      "color": "#10B981",
+      "materials": [
+        { "name": "garapa_bottle", "price_range": "P0.5/piece", "min_price": 0.5, "max_price": 0.5, "unit": "piece", "description": "Garapa glass bottle" },
+        { "name": "softdrinks_bottle", "price_range": "P0.5-1/piece", "min_price": 0.5, "max_price": 1.0, "unit": "piece", "description": "Softdrinks glass bottle" },
+        { "name": "emperador_bottle", "price_range": "P1/piece", "min_price": 1.0, "max_price": 1.0, "unit": "piece", "description": "Emperador brandy bottle" },
+        { "name": "red_horse_bottle", "price_range": "P0.5-1/piece", "min_price": 0.5, "max_price": 1.0, "unit": "piece", "description": "Red Horse beer bottle" },
+        { "name": "san_mig_bottle", "price_range": "P0.5/piece", "min_price": 0.5, "max_price": 0.5, "unit": "piece", "description": "San Miguel beer bottle" },
+        { "name": "shiohoctong_bottle", "price_range": "P3/piece", "min_price": 3.0, "max_price": 3.0, "unit": "piece", "description": "Shio Hoc Tong bottle" },
+        { "name": "tanduay_bottle", "price_range": "P1.5/piece", "min_price": 1.5, "max_price": 1.5, "unit": "piece", "description": "Tanduay rum bottle" },
+        { "name": "ketchup_bottle", "price_range": "P0.2/piece", "min_price": 0.2, "max_price": 0.2, "unit": "piece", "description": "Ketchup glass bottle" },
+        { "name": "tanduay_select_bottle", "price_range": "P0.5/piece", "min_price": 0.5, "max_price": 0.5, "unit": "piece", "description": "Tanduay Select bottle" }
+      ]
+    },
+    {
+      "id": "metal",
+      "name": "Metal Materials",
+      "icon": "metal",
+      "color": "#6B7280",
+      "materials": [
+        { "name": "brass_bronze", "price_range": "P250/kg", "min_price": 250.0, "max_price": 250.0, "unit": "kg", "description": "Brass and bronze scrap" },
+        { "name": "aluminum_can", "price_range": "P60/kg", "min_price": 60.0, "max_price": 60.0, "unit": "kg", "description": "Aluminum cans" },
+        { "name": "lata", "price_range": "P6/kg", "min_price": 6.0, "max_price": 6.0, "unit": "kg", "description": "Tin cans (lata)" },
+        { "name": "cin_metal", "price_range": "P7/kg", "min_price": 7.0, "max_price": 7.0, "unit": "kg", "description": "Tin scrap (cin)" },
+        { "name": "copper", "price_range": "P480/kg", "min_price": 480.0, "max_price": 480.0, "unit": "kg", "description": "Copper scrap" },
+        { "name": "cyclone", "price_range": "P8/kg", "min_price": 8.0, "max_price": 8.0, "unit": "kg", "description": "Cyclone metal" },
+        { "name": "light_metal", "price_range": "P10/kg", "min_price": 10.0, "max_price": 10.0, "unit": "kg", "description": "Light metal scrap" },
+        { "name": "solid_metal", "price_range": "P15/kg", "min_price": 15.0, "max_price": 15.0, "unit": "kg", "description": "Solid metal scrap" },
+        { "name": "kaldero", "price_range": "P60/kg", "min_price": 60.0, "max_price": 60.0, "unit": "kg", "description": "Metal cooking pot (kaldero)" },
+        { "name": "alloy", "price_range": "P80/kg", "min_price": 80.0, "max_price": 80.0, "unit": "kg", "description": "Metal alloy scrap" },
+        { "name": "stainless_scrap", "price_range": "P30/kg", "min_price": 30.0, "max_price": 30.0, "unit": "kg", "description": "Stainless steel scrap" },
+        { "name": "stainless_tray", "price_range": "P20/kg", "min_price": 20.0, "max_price": 20.0, "unit": "kg", "description": "Stainless steel tray" },
+        { "name": "pundido_metal", "price_range": "P8/kg", "min_price": 8.0, "max_price": 8.0, "unit": "kg", "description": "Pundido metal scrap" },
+        { "name": "metal_cylinder", "price_range": "P15/kg", "min_price": 15.0, "max_price": 15.0, "unit": "kg", "description": "Metal cylinder/tank" }
+      ]
+    },
+    {
+      "id": "plastic",
+      "name": "Plastic Materials",
+      "icon": "plastic",
+      "color": "#3B82F6",
+      "materials": [
+        { "name": "monobloc_plastic", "price_range": "P5/kg", "min_price": 5.0, "max_price": 5.0, "unit": "kg", "description": "Monobloc plastic chairs and items" },
+        { "name": "plastic_waste", "price_range": "P11/kg", "min_price": 11.0, "max_price": 11.0, "unit": "kg", "description": "Mixed plastic waste" },
+        { "name": "bottle_case", "price_range": "P40-60/case", "min_price": 40.0, "max_price": 60.0, "unit": "case", "description": "Plastic bottle case" },
+        { "name": "pet_bottle", "price_range": "P4/kg", "min_price": 4.0, "max_price": 4.0, "unit": "kg", "description": "PET plastic bottles" }
+      ]
+    },
+    {
+      "id": "rubber",
+      "name": "Rubber Materials",
+      "icon": "rubber",
+      "color": "#374151",
+      "materials": [
+        { "name": "tires", "price_range": "P30/piece", "min_price": 30.0, "max_price": 30.0, "unit": "piece", "description": "Used rubber tires" }
+      ]
+    },
+    {
+      "id": "e-waste",
+      "name": "Electronic Waste",
+      "icon": "ewaste",
+      "color": "#8B5CF6",
+      "materials": [
+        { "name": "aircon", "price_range": "P500-2000/piece", "min_price": 500.0, "max_price": 2000.0, "unit": "piece", "description": "Air conditioning unit" },
+        { "name": "battery", "price_range": "P150-1000/piece", "min_price": 150.0, "max_price": 1000.0, "unit": "piece", "description": "Batteries (automotive/UPS)" },
+        { "name": "electronic_board", "price_range": "P10-100/kg", "min_price": 10.0, "max_price": 100.0, "unit": "kg", "description": "Electronic circuit boards" }
+      ]
+    },
+    {
+      "id": "paper",
+      "name": "Paper Materials",
+      "icon": "paper",
+      "color": "#F59E0B",
+      "materials": [
+        { "name": "paper", "price_range": "P1-3/kg", "min_price": 1.0, "max_price": 3.0, "unit": "kg", "description": "Mixed paper waste" },
+        { "name": "karton", "price_range": "P6/kg", "min_price": 6.0, "max_price": 6.0, "unit": "kg", "description": "Cardboard/carton boxes" }
+      ]
+    }
+  ]
+}

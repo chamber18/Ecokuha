@@ -1,0 +1,3106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>B.B.P. Tracker - Prototype</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <style>
+        :root {
+            --primary-green: #22C55E;
+            --dark-green: #16A34A;
+            --primary-blue: #3B82F6;
+            --dark-blue: #2563EB;
+            --primary-purple: #8B5CF6;
+            --dark-purple: #7C3AED;
+            --background-light: #f8fafc;
+            --background-dark: #f1f5f9;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            --success-color: #16a34a;
+            --error-color: #ef4444;
+            --star-color: #f59e0b;
+            --nav-height: 90px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #e5e7eb;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            color: var(--text-primary);
+            padding: 20px 0;
+        }
+
+        .phone-container {
+            width: 375px;
+            height: 812px;
+            background: var(--background-light);
+            border-radius: 40px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .page {
+            display: none;
+            flex-direction: column;
+            flex-grow: 1;
+            height: 100%;
+            position: relative;
+        }
+        .page.active {
+            display: flex;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding-bottom: var(--nav-height);
+        }
+        .main-content::-webkit-scrollbar { display: none; }
+        .main-content { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .header {
+            background: var(--background-light); padding: 50px 24px 16px; color: var(--text-primary);
+            border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; gap: 16px;
+            flex-shrink: 0;
+        }
+        .header .back-btn { color: var(--text-primary); text-decoration: none; font-size: 24px; cursor: pointer; }
+        .header h1 { font-size: 20px; font-weight: 700; }
+
+        /* --- HOMEPAGE STYLES --- */
+        #home-page .main-content { padding-bottom: var(--nav-height); }
+        #home-page .header {
+            background: linear-gradient(135deg, var(--primary-green) 0%, var(--dark-green) 100%);
+            color: white;
+            border-bottom-left-radius: 24px;
+            border-bottom-right-radius: 24px;
+        }
+        #home-page .header-top { display: flex; justify-content: space-between; align-items: flex-start; width: 100%; }
+        #home-page .header-logo-section { display: flex; flex-direction: column; }
+        #home-page .app-title { font-size: 24px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+        #home-page .role-badge {
+            background: rgba(255, 255, 255, 0.2); padding: 4px 10px; border-radius: 12px;
+            font-size: 12px; font-weight: 600; backdrop-filter: blur(5px);
+            display: inline-flex; align-items: center; gap: 4px; margin-top: 8px; align-self: flex-start;
+        }
+        #home-page .welcome-section { padding: 24px 24px 16px; }
+        #home-page .welcome-section h1 { font-size: 28px; font-weight: 800; margin-bottom: 4px; color: var(--text-primary); }
+        #home-page .welcome-section p { font-size: 15px; color: var(--text-secondary); }
+        #home-page .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 0 24px 24px; }
+        #home-page .stat-card { background: white; padding: 16px; border-radius: 16px; box-shadow: var(--card-shadow); border: 1px solid #e2e8f0; }
+        #home-page .stat-icon { font-size: 20px; margin-bottom: 12px; }
+        #home-page .stat-value { font-size: 22px; font-weight: 800; margin-bottom: 2px; }
+        #home-page .stat-label { font-size: 12px; color: var(--text-secondary); font-weight: 600; }
+        #home-page .main-action { padding: 0 24px; margin-bottom: 24px; }
+        #home-page .post-waste-btn {
+            width: 100%; background: linear-gradient(135deg, var(--primary-blue) 0%, var(--dark-blue) 100%);
+            color: white; border: none; padding: 18px; border-radius: 20px;
+            font-size: 16px; font-weight: 700; display: flex; align-items: center; justify-content: center;
+            gap: 12px; box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3); cursor: pointer; text-decoration: none;
+        }
+        #home-page .ai-badge { background: rgba(255, 255, 255, 0.2); color: #ffffff; padding: 4px 10px; border-radius: 10px; font-size: 11px; font-weight: 700; }
+        .section-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; padding: 0 24px; }
+        .section-header { display: flex; justify-content: space-between; align-items: center; padding: 0 24px; margin-bottom: 16px; }
+        .section-header h3 { font-size: 18px; font-weight: 700; }
+        .section-header .view-all-btn { font-size: 13px; font-weight: 600; color: var(--primary-blue); text-decoration: none; cursor: pointer; }
+        .action-scroll-container { overflow-x: auto; white-space: nowrap; padding: 0 24px 10px; }
+        .action-scroll-container::-webkit-scrollbar { display: none; }
+        .action-scroll-container { -ms-overflow-style: none; scrollbar-width: none; }
+        .action-grid { display: inline-flex; gap: 12px; }
+        .action-item {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 10px; padding: 16px; background: var(--background-dark); border-radius: 16px;
+            border: 1px solid #e2e8f0; width: 100px; height: 100px; flex-shrink: 0; cursor: pointer;
+        }
+        .action-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+        .action-label { font-size: 12px; font-weight: 600; text-align: center; white-space: normal; }
+        #home-page .action-icon.chat { background: #DBEAFE; color: #3B82F6; }
+        #home-page .action-icon.track { background: #D1FAE5; color: #10B981; }
+        #home-page .action-icon.history { background: #E0E7FF; color: #6366F1; }
+        #home-page .action-icon.guide { background: #FEE2E2; color: #EF4444; }
+        #home-page .recent-activity { padding: 0 24px; }
+        #home-page .recent-activity .section-title { padding-left: 0; padding-right: 0; }
+        .activity-card {
+            background: white; border-radius: 16px; padding: 16px; margin-bottom: 12px;
+            box-shadow: var(--card-shadow); border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 12px;
+            cursor: pointer;
+        }
+        .activity-image {
+            width: 48px; height: 48px; border-radius: 12px; background: var(--background-dark);
+            display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0;
+        }
+        .activity-details { flex-grow: 1; }
+        .activity-details h4 { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+        .activity-details p { font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; }
+        .activity-footer { display: flex; justify-content: space-between; align-items: center; }
+        .activity-value { font-size: 14px; font-weight: 700; color: var(--primary-green); }
+        .activity-status { padding: 4px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; }
+        .status-en-route { background: #FEF3C7; color: #D97706; }
+        .status-completed { background: #DCFCE7; color: #16A34A; }
+        .status-pending { background: #E0E7FF; color: #4F46E5; }
+        
+        /* Junkshop Card Styles */
+        .junkshop-card {
+            display: inline-block;
+            width: 280px;
+            height: 180px;
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        .junkshop-card-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+        .junkshop-card:hover .junkshop-card-image {
+            transform: scale(1.05);
+        }
+        .junkshop-card-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60%;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            display: flex;
+            align-items: flex-end;
+            padding: 16px;
+        }
+        .junkshop-card-info {
+            color: white;
+        }
+        .junkshop-card-info h4 {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .junkshop-card-info p {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+        .junkshop-card-rating {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(0,0,0,0.5);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            backdrop-filter: blur(5px);
+        }
+
+
+        /* --- POST PAGE STYLES --- */
+        #post-page .main-content { padding-bottom: 0; }
+        #post-page .form-section { padding: 16px 24px 0; display: flex; flex-direction: column; gap: 16px; }
+        #post-page .form-group label { font-size: 14px; font-weight: 600; margin-bottom: 8px; display: block; }
+        #post-page .form-group input, #post-page .form-group select {
+            width: 100%; padding: 12px; font-size: 14px; border-radius: 12px;
+            border: 1px solid #e2e8f0; background: white; font-family: 'Inter';
+        }
+        #post-page .address-group { position: relative; }
+        #post-page .address-group input { padding-right: 40px; }
+        #post-page .address-group .use-current-btn {
+            position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+            background: none; border: none; font-size: 20px; cursor: pointer; color: var(--primary-blue);
+        }
+        #post-page .upload-section { padding: 24px; text-align: center; }
+        #post-page .upload-box {
+            background: var(--background-dark); border: 2px dashed #cbd5e1; border-radius: 20px;
+            padding: 30px 20px; transition: background-color 0.3s ease;
+        }
+        #post-page .upload-box .icon { font-size: 48px; color: var(--primary-blue); margin-bottom: 16px; }
+        #post-page .upload-box h2 { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+        #post-page .upload-buttons { display: flex; gap: 12px; }
+        #post-page .upload-buttons button {
+            flex: 1; padding: 12px; font-size: 14px; font-weight: 600;
+            border-radius: 12px; border: none; cursor: pointer; transition: background-color 0.2s ease;
+        }
+        #post-page #take-picture-btn { background-color: var(--primary-blue); color: white; }
+        #post-page #upload-photo-btn { background-color: white; color: var(--primary-blue); border: 1px solid var(--primary-blue); }
+        #post-page #image-preview-container { margin-top: 20px; position: relative; display: none; }
+        #post-page #image-preview { max-width: 100%; max-height: 250px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        #post-page .detected-items-section { padding: 0 24px; }
+        #post-page .item-card { background: white; border-radius: 16px; padding: 16px; margin-bottom: 12px; box-shadow: var(--card-shadow); border: 1px solid #e2e8f0; position: relative; }
+        #post-page .remove-item-btn {
+            position: absolute; top: 8px; right: 8px; width: 24px; height: 24px;
+            background: var(--background-dark); color: var(--text-secondary);
+            border: none; border-radius: 50%; font-size: 16px; font-weight: bold;
+            cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1;
+        }
+        #post-page .item-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+        #post-page .item-icon {
+            width: 48px; height: 48px; border-radius: 12px; background: var(--background-dark);
+            display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0;
+        }
+        #post-page .item-title { flex-grow: 1; }
+        #post-page .item-title h4 { font-size: 16px; font-weight: 600; }
+        #post-page .item-title p { font-size: 12px; color: var(--text-secondary); }
+        #post-page .item-accuracy { font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-top: 4px; }
+        #post-page .item-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding-top: 12px; border-top: 1px solid #e2e8f0; }
+        #post-page .info-chip { background: var(--background-dark); padding: 8px 12px; border-radius: 12px; }
+        #post-page .info-chip .label { font-size: 11px; color: var(--text-secondary); font-weight: 600; margin-bottom: 2px; }
+        #post-page .info-chip .value { font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 4px; }
+        #post-page .info-chip .value.recyclable { color: var(--success-color); }
+        #post-page .info-chip .value.not-recyclable { color: var(--error-color); }
+        #post-page .editable-unit-group { display: flex; align-items: center; gap: 4px; }
+        #post-page .editable-unit-group input {
+            width: 50px; padding: 4px 8px; font-size: 13px; font-weight: 700;
+            border: 1px solid #e2e8f0; border-radius: 8px; text-align: center;
+        }
+        #post-page .editable-unit-group select {
+            width: auto; padding: 4px; font-size: 13px; font-weight: 700;
+            border: 1px solid #e2e8f0; border-radius: 8px;
+        }
+        #post-page .scan-actions {
+            display: flex; flex-direction: column; gap: 12px; padding: 16px 24px 0;
+        }
+        #post-page .scan-actions .action-row { display: flex; gap: 12px; }
+        #post-page .scan-actions button {
+            flex: 1; padding: 12px; font-size: 14px; font-weight: 600;
+            border-radius: 12px; border: none; cursor: pointer;
+        }
+        #post-page #scan-again-btn { background-color: #fee2e2; color: var(--error-color); }
+        #post-page #add-image-btn { background-color: #dbeafe; color: var(--primary-blue); }
+        #post-page #ai-sorter-btn {
+            width: 100%; background-color: #e0e7ff; color: #4f46e5;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        #post-page .total-value-section {
+            padding: 16px 24px; margin: 16px 24px 0; background: var(--dark-green);
+            color: white; border-radius: 16px; display: flex; justify-content: space-between; align-items: center;
+        }
+        #post-page .total-value-section h3 { font-size: 16px; font-weight: 600; }
+        #post-page .total-value-section .value { font-size: 20px; font-weight: 800; }
+        #post-page .post-button-container { padding: 16px 24px 24px; }
+        #post-page .post-button {
+            width: 100%; background: linear-gradient(135deg, var(--primary-blue) 0%, var(--dark-blue) 100%);
+            color: white; border: none; padding: 18px; border-radius: 20px; font-size: 16px; font-weight: 700; cursor: pointer;
+        }
+        
+        /* --- CONFIRMATION PAGE --- */
+        #confirmation-page {
+            background-color: #F0F5FF; /* Light blue background */
+        }
+        #confirmation-page .main-content {
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+        #confirmation-page .conf-top {
+            padding: 50px 24px 24px;
+            position: relative;
+        }
+        #confirmation-page .conf-back-btn {
+            position: absolute;
+            top: 50px;
+            left: 24px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        #confirmation-page .conf-icon-wrapper {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            box-shadow: 0 0 0 10px rgba(255,255,255,0.3);
+        }
+        #confirmation-page .conf-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: var(--primary-blue);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #confirmation-page .conf-icon svg {
+            width: 32px;
+            height: 32px;
+        }
+        #confirmation-page .conf-title {
+            text-align: center;
+        }
+        #confirmation-page .conf-title .tag {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--primary-blue);
+            margin-bottom: 4px;
+        }
+        #confirmation-page .conf-title h1 {
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+        #confirmation-page .conf-title p {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        #confirmation-page .conf-body {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 0 24px 24px;
+        }
+        #confirmation-page .conf-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            width: 100%;
+            text-align: left;
+            margin-bottom: 16px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid #e2e8f0;
+        }
+        #confirmation-page .conf-card .detail-row {
+            display: flex;
+            align-items: flex-start;
+            font-size: 14px;
+            padding: 12px 0;
+            gap: 16px;
+        }
+        #confirmation-page .conf-card .detail-row:not(:last-child) {
+            border-bottom: 1px solid #e2e8f0;
+        }
+        #confirmation-page .conf-card .detail-icon {
+            font-size: 20px;
+            color: var(--primary-blue);
+            width: 24px;
+            text-align: center;
+            margin-top: 4px;
+        }
+        #confirmation-page .conf-card .detail-info {
+            flex-grow: 1;
+        }
+        #confirmation-page .conf-card .detail-info .label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 2px;
+        }
+        #confirmation-page .conf-card .detail-info .value {
+            font-weight: 600;
+        }
+        #confirmation-page .conf-card .detail-info .value.total {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--dark-green);
+        }
+        #confirmation-page .conf-home-btn {
+            width: 100%;
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            padding: 18px;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 24px;
+        }
+
+        /* --- CHAT LIST PAGE STYLES --- */
+        #chat-list-page .main-content { padding: 0; }
+        #chat-list-page .chat-list-item {
+            display: flex; align-items: center; gap: 16px; padding: 16px 24px;
+            border-bottom: 1px solid #e2e8f0; cursor: pointer;
+        }
+        #chat-list-page .chat-list-item:hover { background-color: var(--background-dark); }
+        #chat-list-page .chat-avatar {
+            width: 52px; height: 52px; border-radius: 50%; background: var(--background-dark);
+            display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0;
+            position: relative;
+        }
+        #chat-list-page .online-indicator {
+            position: absolute;
+            top: 0; right: 0;
+            width: 14px; height: 14px;
+            background-color: var(--success-color);
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+        #chat-list-page .chat-info { flex-grow: 1; min-width: 0; } /* Fix for flex overflow */
+        #chat-list-page .chat-name { font-weight: 700; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        #chat-list-page .chat-preview { font-size: 14px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        #chat-list-page .chat-meta { text-align: right; flex-shrink: 0; }
+        #chat-list-page .chat-time { font-size: 12px; color: var(--text-secondary); }
+        #chat-list-page .unread-dot {
+            background-color: var(--primary-blue); color: white;
+            font-size: 11px; font-weight: 700; width: 20px; height: 20px;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            margin-top: 8px; margin-left: auto;
+        }
+        
+        /* --- CONVERSATION PAGE STYLES --- */
+        #conversation-page { padding-bottom: 0; }
+        #conversation-page .header .header-info {
+            display: flex; flex-direction: column; align-items: flex-start;
+        }
+        #conversation-page .header #active-status {
+            display: none; align-items: center; gap: 6px;
+            font-size: 12px; color: var(--text-secondary); font-weight: 500;
+        }
+        #conversation-page .header #active-status.visible {
+            display: flex;
+        }
+        #conversation-page .header .active-dot {
+            width: 8px; height: 8px; background-color: var(--success-color); border-radius: 50%;
+        }
+        #conversation-page .main-content {
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        #conversation-page .chat-container {
+            padding: 16px; display: flex; flex-direction: column; gap: 4px; 
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+        .message-wrapper {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 8px;
+        }
+        .message-wrapper.user-message-wrapper { align-items: flex-end; }
+        .message-wrapper.contact-message-wrapper { align-items: flex-start; }
+        #conversation-page .chat-message { max-width: 80%; padding: 12px 16px; border-radius: 18px; line-height: 1.5; word-wrap: break-word; }
+        #conversation-page .user-message { background-color: var(--primary-blue); color: white; border-bottom-right-radius: 4px; }
+        #conversation-page .contact-message { background-color: var(--background-dark); color: var(--text-primary); border-bottom-left-radius: 4px; }
+        .message-time {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin: 4px 8px 0;
+        }
+        #conversation-page .chat-input-area {
+            flex-shrink: 0;
+            padding: 16px; background: var(--background-light); border-top: 1px solid #e2e8f0;
+            z-index: 25;
+        }
+        #conversation-page .suggestion-chips {
+            display: flex; gap: 8px; margin-bottom: 12px; overflow-x: auto; padding-bottom: 8px;
+        }
+        #conversation-page .suggestion-chips::-webkit-scrollbar { display: none; }
+        #conversation-page .suggestion-chip {
+            background-color: white; border: 1px solid #e2e8f0; color: var(--primary-blue);
+            padding: 8px 12px; border-radius: 20px; font-size: 13px; font-weight: 600;
+            cursor: pointer; white-space: nowrap;
+        }
+        #conversation-page .chat-input-container {
+            display: flex; gap: 12px; align-items: center;
+        }
+        #conversation-page #chat-input {
+            flex-grow: 1; padding: 12px 16px; border: 1px solid #e2e8f0;
+            border-radius: 20px; font-family: 'Inter'; font-size: 14px;
+        }
+        #conversation-page #send-btn {
+            background: var(--primary-blue); color: white; border: none;
+            width: 44px; height: 44px; border-radius: 50%;
+            font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+        }
+        #conversation-page #ai-reply-btn {
+            background: none; border: none; font-size: 24px; color: var(--primary-blue); cursor: pointer;
+        }
+        
+        /* --- TRACK PAGE STYLES --- */
+        #track-page .main-content { padding: 0; background-color: var(--background-dark); }
+        #track-list-container { padding: 16px 24px; }
+        #track-filters {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            justify-content: center;
+        }
+        .track-filter-item {
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 12px;
+            border: 1.5px solid transparent;
+            background-color: white;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .track-filter-item.active {
+            background-color: #e0e7ff;
+            color: var(--primary-blue);
+            border-color: var(--primary-blue);
+        }
+
+        #track-details-container { display: none; flex-grow: 1; flex-direction: column; }
+        #track-details-container .main-content { flex-grow: 1; display: flex; flex-direction: column; }
+
+        #track-details-container .map-container {
+            height: 50%;
+            background-color: #eaf0f2;
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        /* Leaflet Map specific styles */
+        #leaflet-map {
+            height: 100%;
+            width: 100%;
+        }
+        .leaflet-div-icon {
+            background: transparent;
+            border: none;
+        }
+        .leaflet-div-icon .icon-text {
+            font-size: 32px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+        }
+
+        #track-details-container .info-card-wrapper {
+            background: var(--background-dark);
+            padding: 24px;
+            flex-grow: 1;
+            overflow-y: auto;
+            margin-top: -30px;
+            position: relative;
+            z-index: 10;
+            border-top-left-radius: 24px;
+            border-top-right-radius: 24px;
+        }
+        .collector-card, .order-details-card {
+            background: white;
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 16px;
+        }
+        .collector-card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .collector-card-avatar {
+            width: 52px; height: 52px; border-radius: 50%;
+            object-fit: cover;
+        }
+        .collector-card-info h3 { font-size: 16px; font-weight: 700; }
+        .collector-card-info p { font-size: 13px; color: var(--text-secondary); }
+        .collector-card-info .rating { display: flex; align-items: center; gap: 4px; }
+        .collector-card-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+        .collector-card-actions button {
+            flex: 1; padding: 12px; border-radius: 12px;
+            font-weight: 600; font-size: 14px; cursor: pointer;
+        }
+        .collector-card-actions .call-btn {
+            background-color: var(--dark-green);
+            color: white;
+            border: none;
+        }
+        .collector-card-actions .message-btn {
+            background-color: white;
+            color: var(--dark-green);
+            border: 1.5px solid var(--dark-green);
+        }
+        .order-details-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 12px; }
+        .order-item-preview {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .order-item-img {
+            width: 48px; height: 48px; border-radius: 8px;
+            object-fit: cover;
+        }
+        .order-item-info h4 { font-size: 14px; font-weight: 600; }
+        .order-item-info p { font-size: 12px; color: var(--text-secondary); }
+        .order-detail-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        .order-detail-row .label { color: var(--text-secondary); }
+        .order-detail-row .value { font-weight: 600; }
+        .special-instructions-group {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #e2e8f0;
+        }
+        .special-instructions-group strong { font-size: 14px; }
+        .special-instructions-group p { font-size: 14px; color: var(--text-secondary); margin-top: 4px; line-height: 1.5; }
+        
+        .status-timeline {
+            position: relative;
+            padding-left: 30px; /* Space for icons and line */
+        }
+        .status-item {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding-bottom: 24px; /* Space between items */
+        }
+        .status-item:last-child {
+            padding-bottom: 0;
+        }
+        .status-item::before { /* The vertical line */
+            content: '';
+            position: absolute;
+            left: 11px;
+            top: 24px;
+            bottom: -12px;
+            width: 2px;
+            background-color: #e2e8f0;
+        }
+        .status-item:last-child::before {
+            display: none;
+        }
+        .status-item.completed::before {
+            background-color: var(--primary-green);
+        }
+        .status-icon {
+            width: 24px; height: 24px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px;
+            z-index: 1;
+            flex-shrink: 0;
+        }
+        .status-item.completed .status-icon {
+            background-color: var(--primary-green);
+            color: white;
+        }
+        .status-item.pending .status-icon {
+            background-color: white;
+            border: 2px solid #e2e8f0;
+        }
+        .status-item .status-icon svg {
+            width: 16px; height: 16px;
+        }
+        .status-text {
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .status-item.completed .status-text {
+            color: var(--text-primary);
+        }
+        .status-item.pending .status-text {
+            color: var(--text-secondary);
+        }
+        
+        #track-details-no-map .info-card { box-shadow: none; padding: 0; }
+        #track-details-no-map .section-title { padding: 0; margin-top: 16px; }
+        #track-details-no-map .item-entry { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; font-size: 14px; border-bottom: 1px solid #e2e8f0;}
+        #track-details-no-map .item-entry:last-child { border-bottom: none; }
+        #track-details-no-map .item-name { color: var(--text-primary); }
+        #track-details-no-map .item-weight { color: var(--text-secondary); font-weight: 600; }
+        
+        /* --- COLLECTOR/USER PROFILE PAGE --- */
+        #user-profile-page .main-content, #collector-profile-page .main-content { padding-bottom: 0; }
+        .profile-header {
+            padding: 24px;
+            text-align: center;
+        }
+        .profile-avatar-container {
+            position: relative;
+            width: 90px;
+            height: 90px;
+            margin: 0 auto 12px;
+        }
+        .profile-avatar {
+            width: 90px; height: 90px; border-radius: 50%;
+            background: white;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 48px;
+            border: 4px solid white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .profile-pic-edit-btn {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 28px;
+            height: 28px;
+            background-color: var(--primary-blue);
+            color: white;
+            border: 2px solid white;
+            border-radius: 50%;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .profile-name { font-size: 22px; font-weight: 800; }
+        .profile-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            padding: 0 24px;
+        }
+        .stat-item { text-align: center; }
+        .stat-item .value { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+        .stat-item .label { font-size: 12px; color: var(--text-secondary); }
+        .profile-content { padding: 24px; }
+        .review-card {
+            background: white;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid #e2e8f0;
+            position: relative;
+        }
+        .review-card::before {
+            content: '“';
+            position: absolute;
+            top: 10px;
+            left: 16px;
+            font-size: 48px;
+            color: var(--background-dark);
+            font-weight: 800;
+        }
+        .review-header { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+        .reviewer-avatar {
+            width: 40px; height: 40px; border-radius: 50%;
+            background: var(--background-dark);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px;
+        }
+        .reviewer-info { flex-grow: 1; }
+        .reviewer-info .name { font-weight: 600; }
+        .reviewer-info .date { font-size: 12px; color: var(--text-secondary); }
+        .star-rating { color: var(--star-color); font-size: 14px; }
+        .settings-list {
+            background: white;
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            padding: 0 16px;
+        }
+        .settings-list .setting-item {
+            display: flex; align-items: center; padding: 16px 0;
+            border-bottom: 1px solid #e2e8f0;
+            font-weight: 600; cursor: pointer;
+        }
+        .settings-list .setting-item:last-child { border-bottom: none; }
+        .settings-list .setting-item .icon { margin-right: 16px; font-size: 20px; }
+        .settings-list .setting-item .arrow { margin-left: auto; color: var(--text-secondary); }
+        .logout-btn {
+            display: block; width: 100%;
+            padding: 16px; margin-top: 24px;
+            border: none; border-radius: 12px;
+            background: #fee2e2; color: var(--error-color);
+            font-size: 16px; font-weight: 700; cursor: pointer;
+        }
+        
+        /* --- ALL JUNKSHOPS PAGE --- */
+        #all-junkshops-page .main-content { padding: 16px 24px; }
+        .junkshop-list-item {
+            display: flex; gap: 16px; align-items: center;
+            background: white; border-radius: 16px; padding: 16px; margin-bottom: 12px;
+            box-shadow: var(--card-shadow); border: 1px solid #e2e8f0; cursor: pointer;
+        }
+        .junkshop-list-image {
+            width: 64px; height: 64px; border-radius: 12px; object-fit: cover; flex-shrink: 0;
+        }
+        .junkshop-list-info { flex-grow: 1; }
+        .junkshop-list-info h4 { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+        .junkshop-list-info p { font-size: 13px; color: var(--text-secondary); }
+        .junkshop-list-rating { font-size: 13px; font-weight: 600; color: var(--star-color); }
+
+        /* --- JUNKSHOP PROFILE PAGE --- */
+        #junkshop-profile-page .profile-header {
+            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), var(--background-dark) center/cover no-repeat;
+            padding: 40px 24px;
+            color: white;
+            position: relative;
+        }
+        #junkshop-profile-page .profile-avatar {
+            background: white; color: var(--primary-blue);
+        }
+        #junkshop-profile-page .profile-name { color: white; }
+        #junkshop-profile-page .profile-content { padding-top: 16px; }
+        .tag-container { display: flex; flex-wrap: wrap; gap: 8px; }
+        .tag {
+            background: var(--background-dark);
+            color: var(--text-secondary);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .pricing-list-container {
+            background: white; border-radius: 16px; box-shadow: var(--card-shadow);
+            padding: 8px 16px 16px;
+        }
+        .pricing-item {
+            display: grid; grid-template-columns: 2fr 1fr 1fr; align-items: center;
+            padding: 12px 0; font-size: 13px; border-bottom: 1px solid #e2e8f0;
+        }
+        .pricing-item:last-child { border-bottom: none; }
+        .pricing-item .material { font-weight: 600; }
+        .pricing-item .price { text-align: right; color: var(--text-secondary); }
+        .pricing-item .price.clean { color: var(--success-color); font-weight: 600; }
+        .pricing-header {
+            display: grid; grid-template-columns: 2fr 1fr 1fr;
+            font-size: 11px; font-weight: 600; color: var(--text-secondary);
+            padding: 8px 0; text-transform: uppercase;
+        }
+        .pricing-header .price-col { text-align: right; }
+
+        /* --- NOTIFICATIONS PAGE --- */
+        #notifications-page .main-content, #notification-settings-page .main-content { padding: 0; }
+        .notification-list { padding: 8px 0; }
+        .notification-item {
+            display: flex;
+            gap: 16px;
+            padding: 16px 24px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .notification-item.unread {
+            background-color: #eff6ff;
+        }
+        .notification-icon {
+            width: 44px; height: 44px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px; flex-shrink: 0;
+        }
+        .notification-icon.status-update { background-color: #dbeafe; color: #3b82f6; }
+        .notification-icon.earnings { background-color: #dcfce7; color: #16a34a; }
+        .notification-icon.message { background-color: #e0e7ff; color: #4f46e5; }
+        .notification-details { flex-grow: 1; }
+        .notification-details p { font-size: 14px; line-height: 1.4; }
+        .notification-details .time { font-size: 12px; color: var(--text-secondary); margin-top: 6px; }
+
+        /* --- HISTORY PAGE --- */
+        #history-page .main-content { padding: 16px 24px; }
+        .tab-nav {
+            display: flex;
+            background-color: var(--background-dark);
+            border-radius: 12px;
+            padding: 4px;
+            margin-bottom: 16px;
+        }
+        .tab-item {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 10px;
+            color: var(--text-secondary);
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .tab-item.active {
+            background-color: white;
+            color: var(--primary-blue);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .transaction-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 0; border-bottom: 1px solid #e2e8f0;
+        }
+        .transaction-item:last-child { border-bottom: none; }
+        .transaction-icon {
+            width: 40px; height: 40px; border-radius: 10px;
+            background: var(--background-dark); display: flex;
+            align-items: center; justify-content: center; font-size: 18px;
+        }
+        .transaction-details { flex-grow: 1; }
+        .transaction-details h4 { font-size: 14px; font-weight: 600; }
+        .transaction-details p { font-size: 12px; color: var(--text-secondary); }
+        .transaction-amount { font-size: 14px; font-weight: 700; color: var(--success-color); }
+        .stat-bar-group { margin-top: 16px; }
+        .stat-bar-item { margin-bottom: 12px; }
+        .stat-bar-label {
+            display: flex; justify-content: space-between;
+            font-size: 13px; font-weight: 600; margin-bottom: 6px;
+        }
+        .stat-bar-container {
+            height: 10px; background-color: var(--background-dark); border-radius: 5px; overflow: hidden;
+        }
+        .stat-bar { height: 100%; border-radius: 5px; }
+        
+        /* --- SETTINGS PAGES --- */
+        .settings-page-content { padding: 16px 24px; }
+        .settings-section {
+            background: white; border-radius: 16px; box-shadow: var(--card-shadow);
+            padding: 16px; margin-bottom: 24px;
+        }
+        .settings-section h3 { font-size: 16px; font-weight: 700; margin: 0; padding: 0; border: none; margin-bottom: 16px; }
+        .settings-section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 12px;
+            margin-bottom: 16px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .settings-section-header h3 { margin-bottom: 0; }
+        .settings-action-btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 8px;
+            background: var(--primary-blue);
+            color: white;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; display: block; }
+        .form-group input, .form-group textarea {
+            width: 100%; padding: 12px; font-size: 14px; border-radius: 12px;
+            border: 1px solid #e2e8f0; background: var(--background-dark); font-family: 'Inter';
+        }
+        .accordion-item {
+            background: white; border-radius: 16px; box-shadow: var(--card-shadow);
+            margin-bottom: 12px; overflow: hidden;
+        }
+        .accordion-header {
+            padding: 16px; font-weight: 600; cursor: pointer;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .accordion-header .arrow { transition: transform 0.3s ease; }
+        .accordion-item.active .accordion-header .arrow { transform: rotate(180deg); }
+        .accordion-content {
+            padding: 0 16px; max-height: 0; overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+        }
+        .accordion-content p { font-size: 14px; color: var(--text-secondary); line-height: 1.5; }
+        .accordion-item.active .accordion-content {
+            max-height: 200px; padding-bottom: 16px;
+        }
+        
+        /* --- SCHEDULE PAGE --- */
+        .date-selector {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+        .date-item {
+            background: var(--background-dark);
+            border-radius: 12px;
+            padding: 12px 8px;
+            text-align: center;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
+        .date-item .day { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
+        .date-item .date { font-size: 18px; font-weight: 700; }
+        .date-item.today { background-color: #e0e7ff; }
+        .date-item.selected {
+            background-color: var(--primary-blue);
+            color: white;
+            border-color: var(--dark-blue);
+        }
+        .date-item.selected .day { color: rgba(255,255,255,0.8); }
+        
+        .priority-toggle { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .priority-toggle label { font-weight: 600; }
+        .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--primary-blue); }
+        input:checked + .slider:before { transform: translateX(20px); }
+        
+        .time-picker-row { display: flex; gap: 12px; align-items: center; }
+        .time-picker-group { flex: 1; }
+        .time-picker-group label { font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; display: block; }
+        .time-picker-group select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            background-color: var(--background-dark);
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='2' stroke='%2364748b' class='w-6 h-6'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19.5 8.25l-7.5 7.5-7.5-7.5' /%3E%3C/svg%3E%0A");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px;
+        }
+        #confirm-post-btn {
+            background: linear-gradient(135deg, var(--primary-green) 0%, var(--dark-green) 100%);
+            box-shadow: 0 8px 25px rgba(34, 197, 94, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        /* --- SHARED STYLES --- */
+        .bottom-nav {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: var(--nav-height);
+            background: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0 10px 15px;
+            border-top: 1px solid #e2e8f0;
+        }
+        .bottom-nav.hidden {
+            display: none;
+        }
+        .nav-items {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            cursor: pointer;
+            font-size: 10px;
+            font-weight: 600;
+            flex: 1;
+            text-align: center;
+            transition: color 0.2s ease-in-out;
+        }
+        .nav-item.active {
+            color: var(--primary-purple);
+        }
+        .nav-icon {
+            width: 28px;
+            height: 28px;
+            position: relative;
+        }
+        .nav-icon svg {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            transition: opacity 0.2s ease-in-out;
+        }
+        /* Logic to show filled icon on active, outline on inactive */
+        .nav-icon .icon-filled {
+            opacity: 0;
+            color: var(--primary-purple);
+        }
+        .nav-icon .icon-outline {
+            opacity: 1;
+            color: var(--text-secondary);
+        }
+        .nav-item.active .nav-icon .icon-filled {
+            opacity: 1;
+        }
+        .nav-item.active .nav-icon .icon-outline {
+            opacity: 0;
+        }
+
+        .nav-item-post {
+            flex: 1;
+            text-align: center;
+        }
+        .nav-item-post .post-btn-inner {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--primary-purple) 0%, var(--dark-purple) 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            border: 4px solid var(--background-light);
+            box-shadow: none;
+            margin: -35px auto 0; /* Move button up */
+            position: relative;
+            z-index: 1;
+        }
+        .nav-item-post .post-btn-inner svg {
+            width: 28px;
+            height: 28px;
+        }
+        .nav-item-post span {
+            display: block;
+            margin-top: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        /* Modals & Loader */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6);
+            display: flex; justify-content: center; align-items: center; z-index: 1000;
+            opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal-overlay.visible { opacity: 1; visibility: visible; }
+        .modal-content {
+            background: white; padding: 24px; border-radius: 20px; width: 90%; max-width: 340px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); transform: scale(0.95); transition: transform 0.3s ease;
+        }
+        .modal-overlay.visible .modal-content { transform: scale(1); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .modal-title { font-size: 18px; font-weight: 700; }
+        .modal-close-btn { font-size: 24px; color: var(--text-secondary); cursor: pointer; border: none; background: none; }
+        .modal-body input { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 16px; font-family: 'Inter'; }
+        .modal-body button { width: 100%; padding: 12px; border: none; border-radius: 12px; background: var(--primary-blue); color: white; font-weight: 600; cursor: pointer; }
+        .modal-response { margin-top: 16px; padding: 12px; background: var(--background-dark); border-radius: 12px; font-size: 14px; line-height: 1.5; max-height: 200px; overflow-y: auto; }
+        .loader {
+            width: 20px; height: 20px; border: 2px solid #e2e8f0; border-top: 2px solid var(--primary-blue);
+            border-radius: 50%; animation: spin 1s linear infinite; display: none; margin: 20px auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* AI Sorter Modal Chat Styles */
+        #ai-sorter-modal .modal-body {
+            display: flex; flex-direction: column; height: 400px; padding: 0;
+        }
+        #ai-sorter-modal .modal-header { padding: 16px 24px; border-bottom: 1px solid #e2e8f0; }
+        #ai-sorter-modal .ai-chat-container {
+            flex-grow: 1; overflow-y: auto; padding: 16px;
+            display: flex; flex-direction: column; gap: 12px;
+        }
+        #ai-sorter-modal .ai-message {
+            max-width: 85%; padding: 10px 14px; border-radius: 16px; line-height: 1.5;
+            font-size: 14px;
+        }
+        #ai-sorter-modal .ai-message.bot {
+            background-color: var(--background-dark);
+            color: var(--text-primary);
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+        #ai-sorter-modal .ai-message.user {
+            background-color: var(--primary-blue);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+        #ai-sorter-modal .ai-input-area {
+            padding: 16px; border-top: 1px solid #e2e8f0;
+            display: flex; gap: 12px;
+        }
+        #ai-sorter-modal #ai-sorter-input {
+            flex-grow: 1; padding: 10px 14px; border-radius: 20px;
+            border: 1px solid #e2e8f0; font-family: 'Inter';
+        }
+        #ai-sorter-modal #ai-sorter-send-btn {
+            width: 40px; height: 40px; border-radius: 50%; padding: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-container">
+
+        <div id="home-page" class="page active">
+            <div class="main-content">
+                <div class="header">
+                    <div class="header-top">
+                        <div class="header-logo-section">
+                            <div class="app-title">♻️ B.B.P. Tracker</div>
+                            <div class="role-badge">🏠 Household</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="welcome-section">
+                    <h1>Hi, Maria!</h1>
+                    <p>Turn your waste into earnings.</p>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card"><div class="stat-icon">💰</div><div class="stat-value">₱1,250</div><div class="stat-label">This Month</div></div>
+                    <div class="stat-card"><div class="stat-icon">📦</div><div class="stat-value">12</div><div class="stat-label">Collections</div></div>
+                    <div class="stat-card"><div class="stat-icon">🌱</div><div class="stat-value">45kg</div><div class="stat-label">Recycled</div></div>
+                    <div class="stat-card"><div class="stat-icon">🏦</div><div class="stat-value">₱5,820</div><div class="stat-label">Total Earnings</div></div>
+                </div>
+                <div class="main-action">
+                    <div class="post-waste-btn" onclick="navigateTo('post-page')">
+                        📸 Post Your Waste <div class="ai-badge">AI Powered</div>
+                    </div>
+                </div>
+                <div class="quick-actions">
+                    <h3 class="section-title">Quick Actions</h3>
+                    <div class="action-scroll-container">
+                        <div class="action-grid">
+                            <div class="action-item" onclick="navigateTo('chat-list-page')"><div class="action-icon chat">💬</div><div class="action-label">Messages</div></div>
+                            <div class="action-item" onclick="navigateTo('track-page')"><div class="action-icon track">📍</div><div class="action-label">Track</div></div>
+                            <div class="action-item" onclick="navigateTo('history-page')"><div class="action-icon history">📜</div><div class="action-label">History</div></div>
+                            <div class="action-item" id="sortingGuideBtn"><div class="action-icon guide">🧠</div><div class="action-label">Sorting Guide</div></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="nearby-junkshops">
+                    <div class="section-header">
+                        <h3>Nearby Junkshops</h3>
+                        <a class="view-all-btn" onclick="navigateTo('all-junkshops-page')">View all</a>
+                    </div>
+                    <div class="action-scroll-container">
+                        <div class="action-grid" id="junkshop-grid-home">
+                            
+                        </div>
+                    </div>
+                </div>
+                <div id="home-recent-activity" class="recent-activity">
+                    <h3 class="section-title">Recent Collections</h3>
+                    
+                </div>
+            </div>
+        </div>
+
+        <div id="post-page" class="page">
+            <div class="header">
+                <div class="back-btn" onclick="navigateTo('home-page')">←</div>
+                <h1>Post Your Waste</h1>
+            </div>
+            <div class="main-content">
+                <div class="upload-section">
+                    <input type="file" id="image-upload" accept="image/*" style="display: none;">
+                    <div id="image-preview-container">
+                        <img id="image-preview" src="#" alt="Image Preview"/>
+                    </div>
+                    <div class="upload-box" id="upload-box">
+                        <div class="icon">🤖</div>
+                        <h2>Scan Your Recyclables</h2>
+                        <div class="upload-buttons">
+                            <button id="take-picture-btn">📷 Take Picture</button>
+                            <button id="upload-photo-btn">🖼️ Upload Photo</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="detected-items-section">
+                    <div class="section-title" style="padding: 0 0 0 24px;">
+                        <h3>AI Scan Results</h3>
+                    </div>
+                    <div class="loader" id="detection-loader"></div>
+                    <div id="detected-items-list">
+                        <p id="no-items-text" style="text-align: center; color: var(--text-secondary); font-size: 14px; padding: 0 24px;">Results will appear here after scanning</p>
+                    </div>
+                </div>
+                <div id="results-footer" style="display: none;">
+                    <div class="scan-actions">
+                        <div class="action-row">
+                            <button id="scan-again-btn">♻️ Scan Again</button>
+                            <button id="add-image-btn">➕ Add Image</button>
+                        </div>
+                        <button id="ai-sorter-btn">✨ AI Sorting Assistant</button>
+                    </div>
+                    <div class="total-value-section">
+                        <h3>Total Estimated Value</h3>
+                        <div class="value" id="total-value">₱0.00</div>
+                    </div>
+                    <div class="form-section">
+                        <div class="form-group">
+                            <label for="junk-shop-select">Junk Shop</label>
+                            <select id="junk-shop-select">
+                                <option>Green Earth Junk Shop</option>
+                                <option>EcoWaste Solutions</option>
+                                <option>Juan's Recyclables</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="address-input">Pickup Address</label>
+                            <div class="address-group">
+                                <input type="text" id="address-input" value="123 Green St, Tagum City">
+                                <button class="use-current-btn" title="Use Current Location">📍</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="post-button-container">
+                        <button class="post-button" id="schedule-collection-btn">Schedule Collection</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="confirmation-page" class="page">
+            <div class="main-content">
+                <div class="conf-top">
+                    <div class="conf-back-btn" onclick="navigateTo('home-page')">←</div>
+                    <div class="conf-icon-wrapper">
+                        <div class="conf-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="conf-title">
+                        <div class="tag">Great!</div>
+                        <h1>Post Successful</h1>
+                        <p>The junk shop owner will assign a collector soon. We will notify you.</p>
+                    </div>
+                </div>
+
+                <div class="conf-body">
+                    <div class="conf-card">
+                        <div class="detail-row">
+                            <span class="detail-icon">#️⃣</span>
+                            <div class="detail-info">
+                                <div class="label">Post ID</div>
+                                <div class="value" id="conf-post-id">ECO-XXXXXX</div>
+                            </div>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-icon">📅</span>
+                            <div class="detail-info">
+                                <div class="label">Scheduled Dates</div>
+                                <div class="value" id="conf-dates"></div>
+                            </div>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-icon">⏰</span>
+                            <div class="detail-info">
+                                <div class="label">Scheduled Time</div>
+                                <div class="value" id="conf-time"></div>
+                            </div>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-icon">📝</span>
+                            <div class="detail-info">
+                                <div class="label">Instructions</div>
+                                <div class="value" id="conf-instructions"></div>
+                            </div>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-icon">🗑️</span>
+                            <div class="detail-info">
+                                <div class="label">Waste Items</div>
+                                <div class="value" id="conf-waste-items"></div>
+                            </div>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-icon">🏪</span>
+                            <div class="detail-info">
+                                <div class="label">Junk Shop</div>
+                                <div class="value" id="conf-junk-shop">Green Earth Junk Shop</div>
+                            </div>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-icon">📍</span>
+                            <div class="detail-info">
+                                <div class="label">Pickup Address</div>
+                                <div class="value" id="conf-address">123 Green St, Tagum City</div>
+                            </div>
+                        </div>
+                         <div class="detail-row">
+                            <span class="detail-icon">💰</span>
+                            <div class="detail-info">
+                                <div class="label">Est. Value</div>
+                                <div class="value total" id="conf-total-value-2">₱0.00</div>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="conf-home-btn" onclick="navigateTo('home-page')">Back to Home</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="chat-list-page" class="page">
+            <div class="header">
+                 <div class="back-btn" onclick="navigateTo('home-page')">←</div>
+                <h1>Messages</h1>
+            </div>
+            <div class="main-content">
+                <div class="chat-list-item" onclick="openConversation('Juan Santos', 'collector')">
+                    <div class="chat-avatar">
+                        🚛
+                        <span class="online-indicator"></span>
+                    </div>
+                    <div class="chat-info">
+                        <div class="chat-name">Juan Santos <span style="font-size: 12px; color: var(--text-secondary); font-weight: 400;">(Collector)</span></div>
+                        <div class="chat-preview">Okay, I'm on my way now. See you in 15...</div>
+                    </div>
+                    <div class="chat-meta">
+                        <div class="chat-time">10:42 AM</div>
+                        <div class="unread-dot">1</div>
+                    </div>
+                </div>
+                <div class="chat-list-item" onclick="openConversation('Green Earth Junk Shop', 'junkshop')">
+                    <div class="chat-avatar">🏪</div>
+                    <div class="chat-info">
+                        <div class="chat-name">Green Earth Junk Shop</div>
+                        <div class="chat-preview">Yes, we accept all kinds of plastic bottles.</div>
+                    </div>
+                    <div class="chat-meta">
+                        <div class="chat-time">Yesterday</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="conversation-page" class="page">
+             <div class="header">
+                 <div class="back-btn" onclick="navigateTo('chat-list-page')">←</div>
+                 <div class="header-info">
+                     <h1 id="conversation-title"></h1>
+                     <div id="active-status">
+                         <span class="active-dot"></span>
+                         Active now
+                     </div>
+                 </div>
+             </div>
+            <div class="main-content" id="chat-container-wrapper">
+                <div class="chat-container" id="chat-container">
+                        
+                </div>
+            </div>
+            <div class="chat-input-area">
+                <div class="suggestion-chips" id="suggestion-chips-convo">
+                    
+                </div>
+                <div class="chat-input-container">
+                    <button id="ai-reply-btn" title="Generate AI Replies">✨</button>
+                    <input type="text" id="chat-input" placeholder="Type a message...">
+                    <button id="send-btn">➤</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="track-page" class="page">
+            <div class="header" id="track-page-header">
+                <div class="back-btn" onclick="navigateTo('home-page')">←</div>
+                <h1>My Collections</h1>
+            </div>
+            <div class="main-content">
+                <div id="track-list-container">
+                    <div id="track-filters">
+                        <div class="track-filter-item active" data-status="En Route">En Route</div>
+                        <div class="track-filter-item" data-status="Pending">Pending</div>
+                        <div class="track-filter-item" data-status="Completed">Completed</div>
+                    </div>
+                    <div id="collection-list">
+                        
+                    </div>
+                </div>
+
+                <div id="track-details-container">
+                    <div class="main-content">
+                        <div class="map-container" id="details-map-container">
+                             <div id="leaflet-map"></div>
+                        </div>
+                        <div class="info-card-wrapper" id="details-info-card">
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="collector-profile-page" class="page">
+            <div class="header">
+                <div class="back-btn" onclick="navigateTo('track-page')">←</div>
+                <h1>Collector Profile</h1>
+            </div>
+            <div class="main-content">
+                <div class="profile-header">
+                    <div class="profile-avatar">🧑</div>
+                    <h2 class="profile-name">Juan Santos</h2>
+                    <p style="font-size: 14px; color: var(--text-secondary);">Member since 2023</p>
+                </div>
+                <div class="profile-stats">
+                    <div class="stat-item">
+                        <div class="value">⭐ 4.9</div>
+                        <div class="label">Rating</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="value">215</div>
+                        <div class="label">Collections</div>
+                    </div>
+                     <div class="stat-item">
+                        <div class="value">1.2k kg</div>
+                        <div class="label">Recycled</div>
+                    </div>
+                </div>
+                <div class="profile-content">
+                    <h3 class="section-title">Recent Feedback</h3>
+                    <div class="review-card">
+                        <div class="review-header">
+                            <div class="reviewer-avatar">👩</div>
+                            <div class="reviewer-info">
+                                <div class="name">Maria C.</div>
+                                <div class="star-rating" data-rating="5"></div>
+                            </div>
+                            <span style="font-size: 12px; color: var(--text-secondary);">2d ago</span>
+                        </div>
+                        <p class="review-body">"Very fast and friendly collector!"</p>
+                    </div>
+                     <div class="review-card">
+                        <div class="review-header">
+                            <div class="reviewer-avatar">👨</div>
+                            <div class="reviewer-info">
+                                <div class="name">John D.</div>
+                                <div class="star-rating" data-rating="5"></div>
+                            </div>
+                             <span style="font-size: 12px; color: var(--text-secondary);">5d ago</span>
+                        </div>
+                        <p class="review-body">"Polite and efficient. Highly recommended."</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="user-profile-page" class="page">
+            <div class="header">
+                <div class="back-btn" onclick="navigateTo('home-page')">←</div>
+                <h1>My Profile</h1>
+            </div>
+            <div class="main-content">
+                <div class="profile-header">
+                    <div class="profile-avatar-container">
+                        <div class="profile-avatar">👤</div>
+                        <button class="profile-pic-edit-btn" title="Edit Profile Picture">✏️</button>
+                    </div>
+                    <h2 class="profile-name">Maria</h2>
+                    <p style="font-size: 14px; color: var(--text-secondary);">Tagum City, Davao Region</p>
+                </div>
+                <div class="profile-content">
+                     <h3 class="section-title">My Impact</h3>
+                     <div class="profile-stats">
+                         <div class="stat-item">
+                             <div class="value">45 kg</div>
+                             <div class="label">Recycled</div>
+                         </div>
+                         <div class="stat-item">
+                             <div class="value">₱1,250</div>
+                             <div class="label">Earnings</div>
+                         </div>
+                          <div class="stat-item">
+                             <div class="value">12</div>
+                             <div class="label">Collections</div>
+                         </div>
+                    </div>
+                    <h3 class="section-title" style="margin-top: 24px;">Achievements</h3>
+                    <div class="action-scroll-container">
+                        <div class="action-grid">
+                            <div class="action-item"><div class="action-icon" style="background-color: #dcfce7; color: #16a34a;">♻️</div><div class="action-label">Recycling Rookie</div></div>
+                            <div class="action-item"><div class="action-icon" style="background-color: #dbeafe; color: #3b82f6;">🌍</div><div class="action-label">Eco-Warrior</div></div>
+                            <div class="action-item"><div class="action-icon" style="background-color: #fef9c3; color: #ca8a04;">⭐</div><div class="action-label">Top Contributor</div></div>
+                        </div>
+                    </div>
+                    <h3 class="section-title" style="margin-top: 24px;">Settings</h3>
+                    <div class="settings-list">
+                        <div class="setting-item" onclick="navigateTo('account-settings-page')"><span class="icon">👤</span> Account <span class="arrow">></span></div>
+                        <div class="setting-item" onclick="navigateTo('notification-settings-page')"><span class="icon">🔔</span> Notifications <span class="arrow">></span></div>
+                        <div class="setting-item" onclick="navigateTo('help-support-page')"><span class="icon">❓</span> Help & Support <span class="arrow">></span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="account-settings-page" class="page">
+            <div class="header">
+                <div class="back-btn" onclick="navigateTo('user-profile-page')">←</div>
+                <h1>Account Settings</h1>
+            </div>
+            <div class="main-content settings-page-content">
+                <div class="settings-section">
+                    <div class="settings-section-header">
+                        <h3>Profile Information</h3>
+                        <button class="settings-action-btn">Save</button>
+                    </div>
+                    <div class="form-group">
+                        <label for="name-input">Name</label>
+                        <input type="text" id="name-input" value="Maria">
+                    </div>
+                    <div class="form-group">
+                        <label for="email-input">Email Address</label>
+                        <input type="email" id="email-input" value="maria@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="phone-input">Phone Number</label>
+                        <input type="tel" id="phone-input" value="+63 912 345 6789">
+                    </div>
+                    <div class="form-group">
+                        <label for="location-input">Location</label>
+                        <input type="text" id="location-input" value="Tagum City, Davao Region">
+                    </div>
+                </div>
+                <div class="settings-section">
+                    <div class="settings-section-header">
+                        <h3>Security</h3>
+                        <button class="settings-action-btn">Update Password</button>
+                    </div>
+                    <div class="form-group">
+                        <label for="old-password-input">Old Password</label>
+                        <input type="password" id="old-password-input" placeholder="Enter old password">
+                    </div>
+                    <div class="form-group">
+                        <label for="password-input">New Password</label>
+                        <input type="password" id="password-input" placeholder="Enter new password">
+                    </div>
+                </div>
+                <button class="logout-btn">Log Out</button>
+            </div>
+        </div>
+
+        <div id="notification-settings-page" class="page">
+            <div class="header">
+                <div class="back-btn" onclick="navigateTo('user-profile-page')">←</div>
+                <h1>Notifications</h1>
+            </div>
+            <div class="main-content">
+                <div class="notification-list" id="notification-settings-list"></div>
+            </div>
+        </div>
+
+        <div id="help-support-page" class="page">
+            <div class="header">
+                <div class="back-btn" onclick="navigateTo('user-profile-page')">←</div>
+                <h1>Help & Support</h1>
+            </div>
+            <div class="main-content settings-page-content">
+                <h3 class="section-title" style="padding: 0 0 16px 0;">FAQs</h3>
+                <div class="accordion-item">
+                    <div class="accordion-header">How do I post a collection? <span class="arrow">▼</span></div>
+                    <div class="accordion-content">
+                        <p>Tap the large "Post" button on the bottom navigation bar. Take or upload a photo of your recyclables, and our AI will help identify and estimate their value.</p>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <div class="accordion-header">How is the value estimated? <span class="arrow">▼</span></div>
+                    <div class="accordion-content">
+                        <p>The AI estimates the type and weight of your items. The final value is determined by the junk shop after they weigh the items, based on their current pricing.</p>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <div class="accordion-header">When do I get paid? <span class="arrow">▼</span></div>
+                    <div class="accordion-content">
+                        <p>Payment is typically processed by the junk shop through the app once the collection is completed and the items have been verified.</p>
+                    </div>
+                </div>
+                
+                <h3 class="section-title" style="padding: 16px 0;">Contact Us</h3>
+                <div class="settings-section">
+                    <div class="form-group">
+                        <label for="help-subject">Subject</label>
+                        <input type="text" id="help-subject" placeholder="e.g., Issue with my last collection">
+                    </div>
+                    <div class="form-group">
+                        <label for="help-message">Message</label>
+                        <textarea id="help-message" rows="5"></textarea>
+                    </div>
+                    <button class="settings-action-btn" style="width: 100%; padding: 16px;">Send Message</button>
+                </div>
+            </div>
+        </div>
+
+
+        <div id="all-junkshops-page" class="page">
+            <div class="header">
+                <div class="back-btn" onclick="navigateTo('home-page')">←</div>
+                <h1>All Junkshops</h1>
+            </div>
+            <div class="main-content" id="all-junkshops-list">
+                
+            </div>
+        </div>
+
+        <div id="junkshop-profile-page" class="page">
+            <div class="header" style="position: absolute; top: 0; left: 0; right: 0; background: transparent; border: none; z-index: 10;">
+                <div class="back-btn" onclick="navigateTo('home-page')" style="color: white; text-shadow: 0 1px 3px rgba(0,0,0,0.3);">←</div>
+            </div>
+            <div class="main-content" style="padding-bottom: 0;">
+                 <div class="profile-header" id="junkshop-profile-header">
+                    <div class="profile-avatar" id="junkshop-profile-avatar">🏪</div>
+                    <h2 class="profile-name" id="junkshop-profile-name"></h2>
+                    <p style="font-size: 14px; opacity: 0.9;" id="junkshop-profile-location"></p>
+                </div>
+                <div class="profile-stats" style="padding-top: 24px; border-bottom: 1px solid #e2e8f0; padding-bottom: 24px;">
+                    <div class="stat-item">
+                        <div class="value" id="junkshop-profile-rating">⭐ 0.0</div>
+                        <div class="label">Rating</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="value" id="junkshop-profile-collections">0</div>
+                        <div class="label">Total Collections</div>
+                    </div>
+                     <div class="stat-item">
+                        <div class="value" id="junkshop-profile-since"></div>
+                        <div class="label">Operating Since</div>
+                    </div>
+                </div>
+                <div class="profile-content">
+                    <h3 class="section-title" style="padding: 0;">Price List</h3>
+                    <div id="junkshop-pricing-list" class="pricing-list-container" style="margin-bottom: 24px;">
+                        
+                    </div>
+                    <h3 class="section-title" style="padding: 0;">Materials Accepted</h3>
+                    <div class="tag-container" id="junkshop-materials-tags" style="margin-bottom: 24px;">
+                        
+                    </div>
+                    <h3 class="section-title" style="padding: 0;">Services Offered</h3>
+                    <div class="tag-container" id="junkshop-services-tags" style="margin-bottom: 24px;">
+                        
+                    </div>
+                    <h3 class="section-title" style="padding: 0;">Recent Feedback</h3>
+                    <div id="junkshop-reviews-container">
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="notifications-page" class="page">
+            <div class="header">
+                <div class="back-btn" onclick="navigateTo('home-page')">←</div>
+                <h1>Notifications</h1>
+            </div>
+            <div class="main-content">
+                <div class="notification-list" id="notification-list-container">
+                    
+                </div>
+            </div>
+        </div>
+
+        <div id="history-page" class="page">
+            <div class="header">
+                <div class="back-btn" onclick="navigateTo('home-page')">←</div>
+                <h1>History</h1>
+            </div>
+            <div class="main-content">
+                <div class="tab-nav">
+                    <div class="tab-item active" data-tab="transactions">Transactions</div>
+                    <div class="tab-item" data-tab="summary">Summary</div>
+                </div>
+                <div id="tab-transactions" class="tab-content active">
+                    
+                </div>
+                <div id="tab-summary" class="tab-content">
+                    <h3 class="section-title" style="padding: 0 0 16px 0;">Recycling Summary</h3>
+                    <div class="stat-bar-group">
+                        <div class="stat-bar-item">
+                            <div class="stat-bar-label"><span>Plastics</span><span>15.5 kg</span></div>
+                            <div class="stat-bar-container"><div class="stat-bar" style="width: 75%; background-color: #3B82F6;"></div></div>
+                        </div>
+                        <div class="stat-bar-item">
+                            <div class="stat-bar-label"><span>Paper/Cardboard</span><span>20.0 kg</span></div>
+                            <div class="stat-bar-container"><div class="stat-bar" style="width: 90%; background-color: #F59E0B;"></div></div>
+                        </div>
+                        <div class="stat-bar-item">
+                            <div class="stat-bar-label"><span>Metals</span><span>5.5 kg</span></div>
+                            <div class="stat-bar-container"><div class="stat-bar" style="width: 40%; background-color: #64748B;"></div></div>
+                        </div>
+                        <div class="stat-bar-item">
+                            <div class="stat-bar-label"><span>E-Waste</span><span>4.0 kg</span></div>
+                            <div class="stat-bar-container"><div class="stat-bar" style="width: 30%; background-color: #EF4444;"></div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="schedule-page" class="page">
+            <div class="header">
+                <div class="back-btn" onclick="navigateTo('post-page')">←</div>
+                <h1>Schedule Pickup</h1>
+            </div>
+            <div class="main-content" style="padding: 16px 24px;">
+                <div class="settings-section">
+                    <h3>Select Available Date(s)</h3>
+                    <div class="date-selector" id="date-selector-container">
+                        <!-- Dates will be injected by JS -->
+                    </div>
+                </div>
+                <div class="settings-section">
+                    <div class="priority-toggle">
+                        <label for="priority-pickup">High Priority</label>
+                        <label class="switch">
+                            <input type="checkbox" id="priority-pickup">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                     <div class="time-picker-row" id="time-picker-container">
+                        <div class="time-picker-group">
+                            <label for="time-from">From</label>
+                            <select id="time-from"></select>
+                        </div>
+                        <div class="time-picker-group">
+                            <label for="time-to">To</label>
+                            <select id="time-to"></select>
+                        </div>
+                    </div>
+                </div>
+                <div class="settings-section">
+                    <h3>Special Instructions (Optional)</h3>
+                     <div class="form-group" style="margin-bottom: 0;">
+                        <textarea id="pickup-instructions" rows="3" placeholder="e.g., Please ring the doorbell. Items are in the blue recycling bin."></textarea>
+                    </div>
+                </div>
+                <button class="post-button" id="confirm-post-btn" style="margin-top: 16px;">
+                    Confirm & Post
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" style="width: 20px; height: 20px;">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <div class="bottom-nav">
+            <div class="nav-items">
+                <div class="nav-item active" id="nav-home" onclick="navigateTo('home-page')">
+                    <div class="nav-icon">
+                        <svg class="icon-outline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h7.5" /></svg>
+                        <svg class="icon-filled" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M11.47 3.84a.75.75 0 011.06 0l8.69 8.69a.75.75 0 101.06-1.06l-8.689-8.69a2.25 2.25 0 00-3.182 0l-8.69 8.69a.75.75 0 001.061 1.06l8.69-8.69z" /><path d="M12 5.432l8.159 8.159c.026.026.05.054.07.084v6.101A2.25 2.25 0 0117.75 22H6.25a2.25 2.25 0 01-2.25-2.25V13.675a2.25 2.25 0 01.071-.513L12 5.432z" /></svg>
+                    </div>
+                    Home
+                </div>
+                <div class="nav-item" id="nav-chat" onclick="navigateTo('chat-list-page')">
+                    <div class="nav-icon">
+                        <svg class="icon-outline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" /></svg>
+                        <svg class="icon-filled" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M4.804 21.644A6.707 6.707 0 006 21.75a6.721 6.721 0 003.583-1.029c.774.182 1.584.279 2.417.279 5.252 0 9.75-3.694 9.75-8.25s-4.498-8.25-9.75-8.25S2.25 7.444 2.25 12c0 2.102.99 4.02 2.625 5.402a.75.75 0 01.284.656l-.328 3.281a.75.75 0 001.002.805l3.25-1.625a.75.75 0 01.423-.128zM12 13.5a.75.75 0 000-1.5H8.25a.75.75 0 000 1.5H12zm3.75-1.5a.75.75 0 01-.75.75H12a.75.75 0 010-1.5h3a.75.75 0 01.75.75z" clip-rule="evenodd" /></svg>
+                    </div>
+                    Chat
+                </div>
+                <div class="nav-item-post" onclick="navigateTo('post-page')">
+                    <div class="post-btn-inner">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                    </div>
+                    <span>Post</span>
+                </div>
+                <div class="nav-item" id="nav-track" onclick="navigateTo('track-page')">
+                    <div class="nav-icon">
+                        <svg class="icon-outline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        <svg class="icon-filled" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM12.75 6a.75.75 0 00-1.5 0v6c0 .414.336.75.75.75h4.5a.75.75 0 000-1.5h-3.75V6z" clip-rule="evenodd" /></svg>
+                    </div>
+                    Track
+                </div>
+                <div class="nav-item" id="nav-profile" onclick="navigateTo('user-profile-page')">
+                    <div class="nav-icon">
+                         <svg class="icon-outline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
+                         <svg class="icon-filled" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clip-rule="evenodd" /></svg>
+                    </div>
+                    Profile
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="sortingModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">✨ AI Sorting Guide</h3>
+                <button class="modal-close-btn" id="closeModalBtn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 12px;">Ask how to sort any item, or see examples below.</p>
+                <input type="text" id="wasteItemInput" placeholder="e.g., used pizza box, light bulb">
+                <button id="getSortingTipBtn">Get Sorting Tip</button>
+                <div class="loader" id="modalLoader"></div>
+                <div class="modal-response" id="modalResponse"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal-overlay" id="ai-sorter-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">🤖 AI Sorting Assistant</h3>
+                <button class="modal-close-btn" id="closeAiSorterModalBtn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="ai-chat-container" id="ai-chat-container">
+                    <!-- Chat messages will be injected here -->
+                </div>
+                <div class="ai-input-area">
+                    <input type="text" id="ai-sorter-input" placeholder="Ask a follow-up question...">
+                    <button id="ai-sorter-send-btn">➤</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script>
+        let isAddingImage = false; // Flag for Add Image functionality
+        let map; // Variable to hold the map instance
+        let simulationInterval; // For collector movement
+        let etaInterval; // For ETA countdown
+        let lastDetectedItems = []; // Store last detected items for AI sorter
+
+        // --- MOCK DATA ---
+        const mockCollectionsData = [
+            { id: 1, title: 'Mixed Recyclables', junkShop: 'Green Earth Junk Shop', value: 95.00, status: 'En Route', date: '2024-07-17T10:30:00', dateCollected: null, grade: 'A', deliveryAddress: '123 Green St, Tagum City', collector: { name: 'Juan Santos', rating: '4.9 (215 reviews)', vehicle: 'Pickup Truck - ABC 123', avatar: 'https://placehold.co/100x100/E2E8F0/475569?text=JS' }, items: [{ name: 'Plastic Bottles', weight: '8.5 kg'}, { name: 'Aluminum Cans', weight: '2.0 kg'}], pickupTime: '2:00 PM - 4:00 PM', instructions: 'Items are sorted and bagged separately. Please ring doorbell twice.' },
+            { id: 2, title: 'Paper & Cardboard', junkShop: 'EcoWaste Solutions', value: 65.00, status: 'Completed', date: '2024-07-16T14:00:00', dateCollected: '2024-07-16T15:30:00', grade: 'B', deliveryAddress: '456 Eco Ave, Tagum City', collector: { name: 'Pedro L.', rating: '4.7 (180 reviews)', vehicle: 'Motorcycle - XYZ 789', avatar: 'https://placehold.co/100x100/E2E8F0/475569?text=PL' }, items: [{ name: 'Newspapers', weight: '3.0 kg'}, { name: 'Boxes', weight: '2.5 kg'}], pickupTime: '3:00 PM - 5:00 PM', instructions: 'N/A' },
+            { id: 3, title: 'Glass Bottles', junkShop: 'Juan\'s Recyclables', value: 45.00, status: 'Pending', date: '2024-07-18T09:00:00', dateCollected: null, grade: 'A', deliveryAddress: '789 Recycle Rd, Tagum City', collector: null, items: [{ name: 'Glass Bottles', weight: '4.0 kg'}], pickupTime: '9:00 AM - 11:00 AM', instructions: 'Leave by the gate.' },
+            { id: 4, title: 'E-Waste', junkShop: 'EcoWaste Solutions', value: 150.00, status: 'Completed', date: '2024-07-15T11:00:00', dateCollected: '2024-07-15T12:15:00', grade: 'C', deliveryAddress: '101 Tech St, Tagum City', collector: { name: 'Maria C.', rating: '4.8 (250 reviews)', vehicle: 'Van - MNO 456', avatar: 'https://placehold.co/100x100/E2E8F0/475569?text=MC' }, items: [{ name: 'Old Keyboard', weight: '0.5 kg'}, { name: 'Broken Monitor', weight: '3.0 kg'}], pickupTime: '11:00 AM - 1:00 PM', instructions: 'Handle with care.' }
+        ];
+
+        const mockJunkshopsData = [
+            { id: 1, name: 'Green Earth Junk Shop', location: 'Purok 1, Tagum City', rating: 4.8, image: 'https://placehold.co/600x400/22c55e/ffffff?text=Green+Earth', collections: 580, since: 2018, materials: ['Plastic', 'Paper', 'Cardboard', 'Glass'], services: ['Pickup', 'Drop-off', 'On-site Weighing'], pricing: [
+                { material: 'Plastic Bottles (PET)', cleanPrice: 15, dirtyPrice: 8, unit: 'kg' },
+                { material: 'Cardboard', cleanPrice: 5, dirtyPrice: 2, unit: 'kg' },
+                { material: 'Aluminum Cans', cleanPrice: 45, dirtyPrice: 30, unit: 'kg' },
+                { material: 'Glass Bottles', cleanPrice: 2, dirtyPrice: 1, unit: 'kg' }
+            ]},
+            { id: 2, name: 'EcoWaste Solutions', location: 'National Highway, Tagum', rating: 4.6, image: 'https://placehold.co/600x400/3b82f6/ffffff?text=EcoWaste', collections: 450, since: 2020, materials: ['E-Waste', 'Metals', 'Batteries'], services: ['Pickup', 'Secure Data Destruction'], pricing: [
+                { material: 'Copper Wire', cleanPrice: 350, dirtyPrice: 280, unit: 'kg' },
+                { material: 'Circuit Boards', cleanPrice: 50, dirtyPrice: 20, unit: 'kg' },
+                { material: 'Car Batteries', cleanPrice: 40, dirtyPrice: 30, unit: 'kg' }
+            ]},
+            { id: 3, name: 'Juan\'s Recyclables', location: 'Apokon, Tagum City', rating: 4.5, image: 'https://placehold.co/600x400/f59e0b/ffffff?text=Juan\'s', collections: 320, since: 2019, materials: ['All Types', 'Scrap Metal'], services: ['Pickup', 'Bulk Collection'], pricing: [
+                { material: 'Scrap Iron', cleanPrice: 14, dirtyPrice: 10, unit: 'kg' },
+                { material: 'Plastic (Mixed)', cleanPrice: 8, dirtyPrice: 4, unit: 'kg' },
+                { material: 'Paper (Mixed)', cleanPrice: 4, dirtyPrice: 2, unit: 'kg' }
+            ]}
+        ];
+
+        const mockNotificationsData = [
+            { type: 'earnings', text: 'You earned <strong>₱65.00</strong> from your recent Paper & Cardboard collection.', time: '1 day ago', unread: true },
+            { type: 'status-update', text: 'Your Mixed Recyclables collection is now <strong>En Route</strong>.', time: '2 days ago', unread: true },
+            { type: 'message', text: 'You have a new message from <strong>Juan Santos</strong>.', time: '2 days ago', unread: false },
+            { type: 'status-update', text: 'Your E-Waste collection has been <strong>Completed</strong>.', time: '3 days ago', unread: false },
+        ];
+
+        // --- NAVIGATION LOGIC ---
+        const bottomNav = document.querySelector('.bottom-nav');
+        function navigateTo(pageId, data) {
+            // Cleanup previous page's intervals or map instances
+            if (map) {
+                map.remove();
+                map = null;
+            }
+            if (simulationInterval) clearInterval(simulationInterval);
+            if (etaInterval) clearInterval(etaInterval);
+
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            const targetPage = document.getElementById(pageId)
+            if (targetPage) {
+                targetPage.classList.add('active');
+            }
+            
+            updateBottomNav(pageId);
+
+            const pagesWithNav = ['home-page', 'chat-list-page', 'track-page', 'history-page', 'user-profile-page', 'all-junkshops-page'];
+            if (pagesWithNav.includes(pageId)) {
+                bottomNav.classList.remove('hidden');
+            } else {
+                bottomNav.classList.add('hidden');
+            }
+
+            if (pageId === 'track-page') {
+                renderCollectionList();
+                showTrackList(); // Default to list view
+            }
+            if (pageId === 'history-page') {
+                renderHistory();
+            }
+            if (pageId === 'all-junkshops-page') {
+                renderAllJunkshops();
+            }
+            if (pageId === 'junkshop-profile-page' && data && data.junkshopId) {
+                renderJunkshopProfile(data.junkshopId);
+            }
+            if (pageId === 'notification-settings-page') {
+                renderNotifications('notification-settings-list');
+            }
+            if (pageId === 'schedule-page') {
+                renderScheduler();
+            }
+        }
+
+        function updateBottomNav(pageId) {
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            let navId;
+            if (pageId.includes('home') || pageId.includes('junkshop')) navId = 'home';
+            else if (pageId.includes('chat') || pageId.includes('conversation')) navId = 'chat';
+            else if (pageId.includes('track')) navId = 'track';
+            else if (pageId.includes('profile') || pageId.includes('collector-profile') || pageId.includes('settings')) navId = 'profile';
+            
+            const navItem = document.getElementById(`nav-${navId}`);
+            if(navItem) navItem.classList.add('active');
+        }
+        
+        // --- POST PAGE LOGIC ---
+        const imageUpload = document.getElementById('image-upload');
+        const imagePreviewContainer = document.getElementById('image-preview-container');
+        const imagePreview = document.getElementById('image-preview');
+        const detectionLoader = document.getElementById('detection-loader');
+        const detectedItemsList = document.getElementById('detected-items-list');
+        const noItemsText = document.getElementById('no-items-text');
+        const totalValueEl = document.getElementById('total-value');
+        const scheduleCollectionBtn = document.getElementById('schedule-collection-btn');
+        const resultsFooter = document.getElementById('results-footer');
+        const uploadBox = document.getElementById('upload-box');
+        
+        document.getElementById('take-picture-btn').addEventListener('click', () => imageUpload.click());
+        document.getElementById('upload-photo-btn').addEventListener('click', () => imageUpload.click());
+        document.getElementById('add-image-btn').addEventListener('click', () => {
+            isAddingImage = true;
+            imageUpload.click();
+        });
+        document.getElementById('scan-again-btn').addEventListener('click', resetPostPage);
+        document.getElementById('ai-sorter-btn').addEventListener('click', showAiSorter);
+
+        const materialEmojis = {
+            "Mixed Recyclables": 'https://placehold.co/100x100/FEF3C7/D97706?text=♻️', 
+            "Paper & Cardboard": 'https://placehold.co/100x100/E0E7FF/4F46E5?text=📄', 
+            "Glass Bottles": 'https://placehold.co/100x100/DCFCE7/16A34A?text=🍾', 
+            "E-Waste": 'https://placehold.co/100x100/FEE2E2/EF4444?text=🔌',
+            "Plastic Bottles": '🧴', "Aluminum Cans": '🥫', "Cardboard": '📦',
+            "Paper": '📄', "Used Pizza Box": '🍕', "default": '♻️'
+        };
+
+        function resetPostPage() {
+            imagePreviewContainer.style.display = 'none';
+            uploadBox.style.display = 'block';
+            resultsFooter.style.display = 'none';
+            detectedItemsList.innerHTML = '';
+            noItemsText.style.display = 'block';
+            totalValueEl.textContent = '₱0.00';
+            isAddingImage = false;
+            lastDetectedItems = [];
+        }
+        
+        imageUpload.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    imagePreview.src = e.target.result;
+                    imagePreviewContainer.style.display = 'block';
+                    uploadBox.style.display = 'none';
+                    detectWaste(isAddingImage);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function getMockDetectionData() {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    const items = [
+                        { item: 'Plastic Bottles', estimatedWeight: 1.5, unit: 'kg', isRecyclable: true, disposalBin: 'Recyclable Bin', confidence: 92, pricePerUnit: 15, grade: 'A' },
+                        { item: 'Cardboard', estimatedWeight: 2.0, unit: 'kg', isRecyclable: true, disposalBin: 'Recyclable Bin', confidence: 88, pricePerUnit: 5, grade: 'B' },
+                        { item: 'Used Pizza Box', estimatedWeight: 0.2, unit: 'kg', isRecyclable: false, disposalBin: 'Biodegradable Bin', confidence: 85, pricePerUnit: 0, grade: 'C' }
+                    ];
+                    if(isAddingImage) {
+                        resolve([items[Math.floor(Math.random() * items.length)]]);
+                    } else {
+                        resolve(items);
+                    }
+                }, 1500);
+            });
+        }
+
+        async function detectWaste(append = false) {
+            detectionLoader.style.display = 'block';
+            noItemsText.style.display = 'none';
+            if (!append) {
+                detectedItemsList.innerHTML = '';
+                totalValueEl.textContent = '₱0.00';
+                lastDetectedItems = [];
+            }
+            resultsFooter.style.display = 'none';
+
+            const detectedItems = await getMockDetectionData();
+            lastDetectedItems.push(...detectedItems);
+            
+            detectionLoader.style.display = 'none';
+            
+            if (detectedItems && detectedItems.length > 0) {
+                displayDetectedItems(detectedItems, append);
+                resultsFooter.style.display = 'block';
+                bottomNav.classList.add('hidden');
+            } else if (!append) {
+                noItemsText.textContent = "Could not detect any items. Please try another photo.";
+                noItemsText.style.display = 'block';
+                uploadBox.style.display = 'block';
+            }
+            isAddingImage = false;
+        }
+
+        function displayDetectedItems(items, append) {
+            let currentTotal = append ? parseFloat(totalValueEl.textContent.replace('₱', '')) : 0;
+            
+            items.forEach((item, index) => {
+                const value = item.isRecyclable ? item.estimatedWeight * item.pricePerUnit : 0;
+                currentTotal += value;
+                const emoji = materialEmojis[item.item] || materialEmojis.default;
+                const recyclableClass = item.isRecyclable ? 'recyclable' : 'not-recyclable';
+                const recyclableText = item.isRecyclable ? 'Recyclable' : 'Not Recyclable';
+                const cardId = `item-${Date.now()}-${index}`;
+
+                const card = document.createElement('div');
+                card.className = 'item-card';
+                card.id = cardId;
+                card.dataset.value = value;
+                card.dataset.name = item.item;
+
+                card.innerHTML = `
+                    <button class="remove-item-btn" data-card-id="${cardId}" title="Remove Item">&times;</button>
+                    <div class="item-header">
+                        <div class="item-icon">${emoji.startsWith('http') ? `<img src="${emoji}" style="width:100%; height: 100%; object-fit: cover;">` : emoji}</div>
+                        <div class="item-title">
+                            <h4>${item.item}</h4>
+                            <p>Est. Price: ~₱${item.pricePerUnit.toFixed(2)}/${item.unit}</p>
+                        </div>
+                    </div>
+                    <div class="item-info-grid">
+                        <div class="info-chip">
+                            <div class="label">Est. Units</div>
+                            <div class="value editable-unit-group">
+                                <input type="number" value="${item.estimatedWeight.toFixed(1)}" />
+                                <select>
+                                    <option ${item.unit === 'kg' ? 'selected' : ''}>kg</option>
+                                    <option ${item.unit === 'pcs' ? 'selected' : ''}>pcs</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="info-chip">
+                            <div class="label">Status</div>
+                            <div class="value ${recyclableClass}">● ${recyclableText}</div>
+                        </div>
+                        <div class="info-chip">
+                            <div class="label">Grade</div>
+                            <div class="value">Class ${item.grade}</div>
+                        </div>
+                        <div class="info-chip">
+                            <div class="label">AI Accuracy</div>
+                            <div class="value">${item.confidence}%</div>
+                        </div>
+                    </div>
+                `;
+                detectedItemsList.appendChild(card);
+            });
+            totalValueEl.textContent = `₱${currentTotal.toFixed(2)}`;
+        }
+        
+        detectedItemsList.addEventListener('click', (e) => {
+            if (e.target.classList.contains('remove-item-btn')) {
+                const cardId = e.target.dataset.cardId;
+                const cardToRemove = document.getElementById(cardId);
+                if (cardToRemove) {
+                    const valueToRemove = parseFloat(cardToRemove.dataset.value);
+                    const nameToRemove = cardToRemove.dataset.name;
+                    let currentTotal = parseFloat(totalValueEl.textContent.replace('₱', ''));
+                    currentTotal -= valueToRemove;
+                    totalValueEl.textContent = `₱${currentTotal.toFixed(2)}`;
+                    
+                    const itemIndex = lastDetectedItems.findIndex(item => item.item === nameToRemove);
+                    if (itemIndex > -1) {
+                        lastDetectedItems.splice(itemIndex, 1);
+                    }
+                    
+                    cardToRemove.remove();
+                    
+                    if(detectedItemsList.children.length === 0) {
+                        resetPostPage();
+                    }
+                }
+            }
+        });
+
+        scheduleCollectionBtn.addEventListener('click', () => {
+             navigateTo('schedule-page');
+        });
+
+        // --- GEMINI API HELPER (Simulating DeepSeek) ---
+        async function callAiApi(prompt) {
+            const apiKey = ""; // Handled by environment
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+            const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!response.ok) throw new Error(`API Error: ${response.status}`);
+                const result = await response.json();
+                return result.candidates[0].content.parts[0].text;
+            } catch (error) {
+                console.error("AI API Error:", error);
+                return "Sorry, I'm having trouble connecting. Please try again later.";
+            }
+        }
+        
+        // --- CONVERSATION PAGE LOGIC ---
+        const chatContainer = document.getElementById('chat-container');
+        const chatContainerWrapper = document.getElementById('chat-container-wrapper');
+        const chatInput = document.getElementById('chat-input');
+        const sendBtn = document.getElementById('send-btn');
+        const suggestionChipsContainerConvo = document.getElementById('suggestion-chips-convo');
+        const aiReplyBtn = document.getElementById('ai-reply-btn');
+        const conversationTitle = document.getElementById('conversation-title');
+        const activeStatusDiv = document.getElementById('active-status');
+        let currentConversationContext = '';
+
+        const mockConversations = {
+            'Juan Santos': [
+                { sender: 'contact', text: "Hello! I've been assigned to your collection request for Mixed Recyclables.", time: '10:35 AM' },
+                { sender: 'user', text: "Great! When can you come by?", time: '10:36 AM' },
+                { sender: 'contact', text: "I can be there in about 30 minutes. Is that okay?", time: '10:36 AM'},
+                { sender: 'user', text: "Yes, that works perfectly. The items are by the front gate.", time: '10:38 AM'},
+                { sender: 'contact', text: "Okay, I'm on my way now. See you in 15...", time: '10:42 AM'}
+            ],
+            'Green Earth Junk Shop': [
+                { sender: 'user', text: "Hi, do you accept colored plastic bottles?", time: 'Yesterday' },
+                { sender: 'contact', text: "Yes, we accept all kinds of plastic bottles.", time: 'Yesterday' }
+            ]
+        };
+
+        function openConversation(name, type) {
+            navigateTo('conversation-page');
+            conversationTitle.textContent = name;
+            activeStatusDiv.classList.toggle('visible', type === 'collector');
+
+            chatContainer.innerHTML = '';
+            suggestionChipsContainerConvo.innerHTML = '';
+            chatInput.value = '';
+            currentConversationContext = type;
+
+            const messages = mockConversations[name] || [];
+            messages.forEach(msg => {
+                appendMessage(msg.text, msg.sender, msg.time);
+            });
+        }
+        
+        sendBtn.addEventListener('click', handleSendMessage);
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleSendMessage();
+        });
+        
+        aiReplyBtn.addEventListener('click', generateAiReplies);
+
+        function handleSendMessage() {
+            const userInput = chatInput.value.trim();
+            if (!userInput) return;
+            
+            const now = new Date();
+            const hours = now.getHours() % 12 || 12;
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const ampm = now.getHours() >= 12 ? 'PM' : 'AM';
+            const currentTime = `${hours}:${minutes} ${ampm}`;
+
+            appendMessage(userInput, 'user', currentTime);
+            chatInput.value = '';
+            suggestionChipsContainerConvo.innerHTML = '';
+        }
+        
+        async function generateAiReplies() {
+            const lastMessage = Array.from(chatContainer.querySelectorAll('.contact-message')).pop()?.textContent || "I am ready for pickup.";
+            const prompt = `You are a user of a recycling app. The last message from a ${currentConversationContext} was: "${lastMessage}". Generate three short, relevant, one-sentence quick replies. Examples: "Okay, thank you!", "I'm ready for pickup.", "What are your current rates?". Respond ONLY with a JSON array of strings.`;
+            
+            suggestionChipsContainerConvo.innerHTML = '<div class="loader" style="display: block; margin: 0 10px;"></div>';
+            
+            const responseText = await callAiApi(prompt);
+            
+            suggestionChipsContainerConvo.innerHTML = '';
+            try {
+                const replies = JSON.parse(responseText.replace(/```json|```/g, '').trim());
+                replies.forEach(reply => {
+                    const chip = document.createElement('div');
+                    chip.className = 'suggestion-chip';
+                    chip.textContent = reply;
+                    chip.onclick = () => {
+                        chatInput.value = reply;
+                        handleSendMessage();
+                    };
+                    suggestionChipsContainerConvo.appendChild(chip);
+                });
+            } catch (e) {
+                console.error("Failed to parse AI replies:", e);
+                const chip = document.createElement('div');
+                chip.className = 'suggestion-chip';
+                chip.textContent = 'Error getting suggestions.';
+                suggestionChipsContainerConvo.appendChild(chip);
+            }
+        }
+        
+        function appendMessage(text, sender, time) {
+            const wrapperClass = `${sender}-message-wrapper`;
+            const messageClass = `${sender}-message`;
+
+            const messageWrapper = document.createElement('div');
+            messageWrapper.className = `message-wrapper ${wrapperClass}`;
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${messageClass}`;
+            messageDiv.textContent = text;
+            
+            const timeDiv = document.createElement('div');
+            timeDiv.className = 'message-time';
+            timeDiv.textContent = time;
+
+            messageWrapper.appendChild(messageDiv);
+            messageWrapper.appendChild(timeDiv);
+            chatContainer.appendChild(messageWrapper);
+            chatContainerWrapper.scrollTop = chatContainerWrapper.scrollHeight;
+        }
+
+        // --- SORTING GUIDE LOGIC ---
+        const sortingModal = document.getElementById('sortingModal');
+        const sortingGuideBtn = document.getElementById('sortingGuideBtn');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const getSortingTipBtn = document.getElementById('getSortingTipBtn');
+        const wasteItemInput = document.getElementById('wasteItemInput');
+        const modalLoader = document.getElementById('modalLoader');
+        const modalResponse = document.getElementById('modalResponse');
+
+        function showSortingGuide() {
+            modalResponse.style.display = 'block';
+            modalLoader.style.display = 'none';
+            getSortingTipBtn.disabled = false;
+            modalResponse.innerHTML = `
+                <p><strong>Plastic Bottles (PET):</strong> Empty and rinse. Remove caps (check if recyclable separately). Best to flatten to save space.</p>
+                <hr style="margin: 12px 0; border: none; border-top: 1px solid #e2e8f0;">
+                <p><strong>Cardboard:</strong> Flatten all boxes. Remove any plastic tape or wrapping. Keep it dry.</p>
+            `;
+            sortingModal.classList.add('visible');
+        }
+
+        sortingGuideBtn.addEventListener('click', showSortingGuide);
+        closeModalBtn.addEventListener('click', () => sortingModal.classList.remove('visible'));
+        sortingModal.addEventListener('click', (e) => {
+            if (e.target === sortingModal) sortingModal.classList.remove('visible');
+        });
+
+        getSortingTipBtn.addEventListener('click', async () => {
+            const wasteItem = wasteItemInput.value.trim();
+            if (!wasteItem) {
+                modalResponse.innerHTML = "<p>Please enter a waste item first.</p>";
+                return;
+            }
+
+            modalLoader.style.display = 'block';
+            getSortingTipBtn.disabled = true;
+            modalResponse.style.display = 'none';
+
+            const prompt = `As an expert in waste management in the Philippines, please provide a simple and clear guide on how to properly sort the following item for recycling: "${wasteItem}". Is it typically recyclable in the Philippines? If not, what is the proper way to dispose of it? Keep the answer concise, easy for a household user to understand, and use HTML for basic formatting like bold tags.`;
+            const responseText = await callAiApi(prompt);
+
+            modalResponse.innerHTML = responseText;
+            modalResponse.style.display = 'block';
+            modalLoader.style.display = 'none';
+            getSortingTipBtn.disabled = false;
+        });
+        
+        // --- TRACK PAGE LOGIC ---
+        const trackListContainer = document.getElementById('track-list-container');
+        const trackDetailsContainer = document.getElementById('track-details-container');
+        const collectionListEl = document.getElementById('collection-list');
+        const trackFilters = document.getElementById('track-filters');
+        const trackPageHeader = document.getElementById('track-page-header');
+
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            return new Date(dateString).toLocaleDateString(undefined, options);
+        }
+
+        function renderCollectionList() {
+            const activeFilter = trackFilters.querySelector('.active');
+            const status = activeFilter ? activeFilter.dataset.status : 'En Route';
+
+            let filteredData = mockCollectionsData.filter(item => item.status === status);
+
+            collectionListEl.innerHTML = '';
+            if (filteredData.length === 0) {
+                collectionListEl.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 20px;">No collections found for this status.</p>';
+                return;
+            }
+
+            filteredData.forEach(item => {
+                const itemHtml = `
+                    <div class="activity-card" onclick="navigateToTrackDetails(${item.id})">
+                        <div class="activity-image">${materialEmojis[item.title] ? `<img src="${materialEmojis[item.title]}" style="width:100%; height: 100%; object-fit: cover;">` : '♻️'}</div>
+                        <div class="activity-details">
+                            <h4>${item.title}</h4>
+                            <p>${item.junkShop}</p>
+                            <div class="activity-footer">
+                                <div class="activity-value">Est. ₱${item.value.toFixed(2)}</div>
+                                <div class="activity-status status-${item.status.toLowerCase().replace(' ', '-')}">${item.status}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                collectionListEl.innerHTML += itemHtml;
+            });
+        }
+
+        trackFilters.addEventListener('click', (e) => {
+            if (e.target.classList.contains('track-filter-item')) {
+                trackFilters.querySelector('.active').classList.remove('active');
+                e.target.classList.add('active');
+                renderCollectionList();
+            }
+        });
+
+        function navigateToTrackDetails(collectionId) {
+            const collection = mockCollectionsData.find(c => c.id === collectionId);
+            if (!collection) return;
+
+            if (map) { map.remove(); map = null; }
+            if (simulationInterval) clearInterval(simulationInterval);
+            if (etaInterval) clearInterval(etaInterval);
+
+            trackListContainer.style.display = 'none';
+            trackDetailsContainer.style.display = 'flex';
+            bottomNav.classList.add('hidden');
+            
+            const backBtn = trackPageHeader.querySelector('.back-btn');
+            backBtn.onclick = () => showTrackList();
+
+            const detailsMapContainer = document.getElementById('details-map-container');
+            const detailsInfoCard = document.getElementById('details-info-card');
+
+            if (collection.status === 'En Route') {
+                detailsMapContainer.style.display = 'block';
+                const totalQuantity = collection.items.reduce((sum, item) => sum + parseFloat(item.weight), 0);
+                detailsInfoCard.innerHTML = `
+                    <div class="eta-header">
+                        <div class="eta-time" id="eta-time-details">15 mins</div>
+                        <div class="eta-label">Estimated Arrival Time</div>
+                    </div>
+                    <div class="collector-card">
+                        <div class="collector-card-header">
+                            <img src="${collection.collector.avatar}" alt="${collection.collector.name}" class="collector-card-avatar">
+                            <div class="collector-card-info">
+                                <h3>${collection.collector.name}</h3>
+                                <p class="rating">⭐ ${collection.collector.rating}</p>
+                                <p>${collection.collector.vehicle}</p>
+                            </div>
+                        </div>
+                        <div class="collector-card-actions">
+                            <button class="call-btn">📞 Call</button>
+                            <button class="message-btn" onclick="openConversation('${collection.collector.name}', 'collector')">💬 Message</button>
+                        </div>
+                    </div>
+                    <div class="progress-card">
+                        <h3>Collection Progress</h3>
+                        ${renderStatusTimeline()}
+                    </div>
+                    <div class="order-details-card">
+                         <h3>Order Details</h3>
+                         <div class="order-item-preview">
+                            <img src="${materialEmojis[collection.title]}" class="order-item-img">
+                            <div class="order-item-info">
+                                <h4>${collection.title}</h4>
+                                <p>${collection.items.map(i => i.name).join(', ')}</p>
+                            </div>
+                         </div>
+                         <div class="order-detail-row">
+                            <span class="label">Quantity</span>
+                            <span class="value">${totalQuantity.toFixed(1)} kg</span>
+                         </div>
+                         <div class="order-detail-row">
+                            <span class="label">Agreed Price</span>
+                            <span class="value">₱${collection.value.toFixed(2)}</span>
+                         </div>
+                         <div class="order-detail-row">
+                            <span class="label">Pickup Time</span>
+                            <span class="value">${collection.pickupTime}</span>
+                         </div>
+                         <div class="order-detail-row">
+                            <span class="label">Order ID</span>
+                            <span class="value">#ECO-${collection.id.toString().padStart(6, '0')}</span>
+                         </div>
+                         <div class="special-instructions-group">
+                            <strong>Special Instructions</strong>
+                            <p>${collection.instructions}</p>
+                         </div>
+                    </div>
+                `;
+                setTimeout(() => initializeMap(collection), 50);
+            } else {
+                 detailsMapContainer.style.display = 'none';
+                 detailsInfoCard.innerHTML = `
+                    <div id="track-details-no-map" style="padding: 24px;">
+                        <div class="activity-card" style="box-shadow: none; border: none; padding: 0; margin-bottom: 24px;">
+                             <div class="activity-image">${materialEmojis[collection.title] ? `<img src="${materialEmojis[collection.title]}" style="width:100%; height: 100%; object-fit: cover;">` : '♻️'}</div>
+                            <div class="activity-details">
+                                <h4>${collection.title}</h4>
+                                <p>${collection.junkShop}</p>
+                                <div class="activity-footer">
+                                    <div class="activity-value">₱${collection.value.toFixed(2)}</div>
+                                    <div class="activity-status status-${collection.status.toLowerCase().replace(' ', '-')}">${collection.status}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="settings-section">
+                            <h3>Collection Details</h3>
+                            <div class="order-detail-row"><span class="label">Date Posted</span><span class="value">${formatDate(collection.date)}</span></div>
+                            <div class="order-detail-row"><span class="label">Date Collected</span><span class="value">${formatDate(collection.dateCollected)}</span></div>
+                            <div class="order-detail-row"><span class="label">Junk Shop</span><span class="value">${collection.junkShop}</span></div>
+                            <div class="order-detail-row"><span class="label">Address</span><span class="value">${collection.deliveryAddress}</span></div>
+                            <div class="order-detail-row"><span class="label">Waste Grade</span><span class="value">Class ${collection.grade}</span></div>
+                        </div>
+                         <div class="settings-section">
+                            <h3 style="margin-bottom: 0;">Items</h3>
+                            ${collection.items.map(item => `
+                                <div class="item-entry">
+                                    <span class="item-name">${item.name}</span>
+                                    <span class="item-weight">${item.weight}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                        ${collection.collector ? `
+                             <div class="settings-section">
+                                 <h3>Collector</h3>
+                                 <div class="collector-info" style="border: none; padding: 0;" onclick="navigateTo('collector-profile-page')">
+                                     <div class="collector-avatar">🧑</div>
+                                     <div class="collector-details">
+                                         <div class="collector-name">${collection.collector.name}</div>
+                                         <div class="collector-rating">⭐ ${collection.collector.rating}</div>
+                                     </div>
+                                 </div>
+                             </div>
+                        ` : ''}
+                    </div>
+                `;
+            }
+        }
+        
+        function renderStatusTimeline() {
+            return `
+                <div class="status-timeline">
+                    <div class="status-item completed">
+                        <div class="status-icon">✓</div>
+                        <span class="status-text">Posted</span>
+                    </div>
+                    <div class="status-item completed">
+                        <div class="status-icon">✓</div>
+                        <span class="status-text">Accepted</span>
+                    </div>
+                    <div class="status-item completed">
+                        <div class="status-icon">✓</div>
+                        <span class="status-text">Collector Assigned</span>
+                    </div>
+                    <div class="status-item completed">
+                        <div class="status-icon">✓</div>
+                        <span class="status-text">En Route</span>
+                    </div>
+                    <div class="status-item pending">
+                        <div class="status-icon"></div>
+                        <span class="status-text">Arrived</span>
+                    </div>
+                    <div class="status-item pending">
+                        <div class="status-icon"></div>
+                        <span class="status-text">Collecting</span>
+                    </div>
+                    <div class="status-item pending">
+                        <div class="status-icon"></div>
+                        <span class="status-text">Completed</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function showTrackList() {
+            if (map) { map.remove(); map = null; }
+            if (simulationInterval) clearInterval(simulationInterval);
+            if (etaInterval) clearInterval(etaInterval);
+
+            trackListContainer.style.display = 'block';
+            trackDetailsContainer.style.display = 'none';
+            bottomNav.classList.remove('hidden');
+            const backBtn = trackPageHeader.querySelector('.back-btn');
+            backBtn.onclick = () => navigateTo('home-page');
+            renderCollectionList();
+        }
+
+        function startEtaCountdown(durationInSeconds) {
+            const etaTimeEl = document.getElementById('eta-time-details');
+            if (!etaTimeEl) return;
+            let time = durationInSeconds;
+            
+            if (etaInterval) clearInterval(etaInterval);
+
+            etaInterval = setInterval(() => {
+                if (time <= 0) {
+                    clearInterval(etaInterval);
+                    etaTimeEl.textContent = "Arrived!";
+                    return;
+                }
+                time--;
+                const minutes = Math.floor(time / 60);
+                etaTimeEl.textContent = `${minutes} mins`;
+            }, 1000);
+        }
+        
+        // --- LIVE MAP LOGIC (LEAFLET) ---
+        function initializeMap(collection) {
+            if (map) { map.remove(); map = null; }
+
+            const homeLocation = [7.4478, 125.8078]; 
+            const collectorStartLocation = [7.4600, 125.8050];
+
+            map = L.map('leaflet-map').setView(homeLocation, 14);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+
+            const homeIcon = L.divIcon({ html: '<div class="icon-text">🏠</div>', className: 'leaflet-div-icon', iconSize: [40, 40], iconAnchor: [20, 40] });
+            const collectorIcon = L.divIcon({ html: '<div class="icon-text">🚛</div>', className: 'leaflet-div-icon', iconSize: [40, 40], iconAnchor: [20, 40] });
+
+            L.marker(homeLocation, { icon: homeIcon }).addTo(map).bindPopup("Your Location");
+            const collectorMarker = L.marker(collectorStartLocation, { icon: collectorIcon }).addTo(map).bindPopup(`Collector: ${collection.collector.name}`);
+
+            const routeWaypoints = [ L.latLng(collectorStartLocation[0], collectorStartLocation[1]), L.latLng(7.4550, 125.8100), L.latLng(7.4495, 125.8120), L.latLng(homeLocation[0], homeLocation[1]) ];
+            const routeLine = L.polyline(routeWaypoints, {color: 'var(--primary-blue)', weight: 5, opacity: 0.7}).addTo(map);
+            map.fitBounds(routeLine.getBounds().pad(0.2));
+
+            // simulateCollectorMovement(collectorMarker, routeWaypoints);
+        }
+
+        function simulateCollectorMovement(marker, waypoints) {
+            let currentWaypointIndex = 0;
+            let step = 0;
+            const totalSteps = 200;
+            const simulationDuration = 15 * 60 * 1000;
+            const intervalTime = simulationDuration / (totalSteps * (waypoints.length -1));
+
+            startEtaCountdown(simulationDuration / 1000);
+
+            if (simulationInterval) clearInterval(simulationInterval);
+
+            simulationInterval = setInterval(() => {
+                if (currentWaypointIndex >= waypoints.length - 1) {
+                    clearInterval(simulationInterval);
+                    return;
+                }
+
+                const startPoint = waypoints[currentWaypointIndex];
+                const endPoint = waypoints[currentWaypointIndex + 1];
+                
+                const lat = startPoint.lat + (endPoint.lat - startPoint.lat) * (step / totalSteps);
+                const lng = startPoint.lng + (endPoint.lng - startPoint.lng) * (step / totalSteps);
+                
+                marker.setLatLng([lat, lng]);
+                
+                step++;
+                if (step > totalSteps) {
+                    step = 0;
+                    currentWaypointIndex++;
+                }
+            }, intervalTime / totalSteps);
+        }
+
+        // --- NOTIFICATIONS LOGIC ---
+        function renderNotifications(containerId = 'notification-list-container') {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            container.innerHTML = '';
+
+            const iconMap = { 'earnings': '💰', 'status-update': '🚚', 'message': '💬' };
+
+            if (mockNotificationsData.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 40px 20px;">You have no new notifications.</p>';
+                return;
+            }
+
+            mockNotificationsData.forEach(noti => {
+                const item = document.createElement('div');
+                item.className = `notification-item ${noti.unread ? 'unread' : ''}`;
+                item.innerHTML = `
+                    <div class="notification-icon ${noti.type}">
+                        ${iconMap[noti.type] || '🔔'}
+                    </div>
+                    <div class="notification-details">
+                        <p>${noti.text}</p>
+                        <div class="time">${noti.time}</div>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        // --- HISTORY PAGE LOGIC ---
+        function renderHistory() {
+            const container = document.getElementById('tab-transactions');
+            container.innerHTML = '';
+            const completed = mockCollectionsData.filter(c => c.status === 'Completed');
+
+            if (completed.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 20px;">No completed transactions yet.</p>';
+                return;
+            }
+
+            completed.forEach(item => {
+                const itemHtml = `
+                    <div class="transaction-item">
+                        <div class="transaction-icon">${materialEmojis[item.title] ? `<img src="${materialEmojis[item.title]}" style="width:100%; height: 100%; object-fit: cover; border-radius: 10px;">` : '♻️'}</div>
+                        <div class="transaction-details">
+                            <h4>${item.title}</h4>
+                            <p>${formatDate(item.dateCollected)}</p>
+                        </div>
+                        <div class="transaction-amount">+ ₱${item.value.toFixed(2)}</div>
+                    </div>
+                `;
+                container.innerHTML += itemHtml;
+            });
+        }
+
+        document.querySelector('.tab-nav').addEventListener('click', (e) => {
+            if (e.target.classList.contains('tab-item')) {
+                const tabId = e.target.dataset.tab;
+                document.querySelectorAll('.tab-item').forEach(tab => tab.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                e.target.classList.add('active');
+                document.getElementById(`tab-${tabId}`).classList.add('active');
+            }
+        });
+
+        // --- JUNKSHOP LOGIC ---
+        function renderJunkshopsOnHome() {
+            const container = document.getElementById('junkshop-grid-home');
+            container.innerHTML = '';
+            mockJunkshopsData.forEach(shop => {
+                const card = document.createElement('div');
+                card.className = 'junkshop-card';
+                card.onclick = () => navigateTo('junkshop-profile-page', { junkshopId: shop.id });
+                card.innerHTML = `
+                    <img src="${shop.image}" alt="${shop.name}" class="junkshop-card-image">
+                    <div class="junkshop-card-rating">⭐ ${shop.rating}</div>
+                    <div class="junkshop-card-overlay">
+                        <div class="junkshop-card-info">
+                            <h4>${shop.name}</h4>
+                            <p>${shop.location}</p>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderAllJunkshops() {
+            const container = document.getElementById('all-junkshops-list');
+            container.innerHTML = '';
+            mockJunkshopsData.forEach(shop => {
+                const item = document.createElement('div');
+                item.className = 'junkshop-list-item';
+                item.onclick = () => navigateTo('junkshop-profile-page', { junkshopId: shop.id });
+                item.innerHTML = `
+                    <img src="${shop.image}" alt="${shop.name}" class="junkshop-list-image">
+                    <div class="junkshop-list-info">
+                        <h4>${shop.name}</h4>
+                        <p>${shop.location}</p>
+                    </div>
+                    <div class="junkshop-list-rating">⭐ ${shop.rating}</div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function renderJunkshopProfile(junkshopId) {
+            const shop = mockJunkshopsData.find(j => j.id === junkshopId);
+            if (!shop) {
+                navigateTo('home-page');
+                return;
+            }
+
+            document.getElementById('junkshop-profile-header').style.backgroundImage = `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('${shop.image}')`;
+            document.getElementById('junkshop-profile-name').textContent = shop.name;
+            document.getElementById('junkshop-profile-location').textContent = shop.location;
+            document.getElementById('junkshop-profile-rating').innerHTML = `⭐ ${shop.rating}`;
+            document.getElementById('junkshop-profile-collections').textContent = shop.collections;
+            document.getElementById('junkshop-profile-since').textContent = shop.since;
+            
+            const pricingContainer = document.getElementById('junkshop-pricing-list');
+            pricingContainer.innerHTML = `
+                <div class="pricing-header">
+                    <span>Material</span>
+                    <span class="price-col">Dirty</span>
+                    <span class="price-col">Clean</span>
+                </div>
+            `;
+            if (shop.pricing && shop.pricing.length > 0) {
+                shop.pricing.forEach(p => {
+                    pricingContainer.innerHTML += `
+                        <div class="pricing-item">
+                            <span class="material">${p.material}</span>
+                            <span class="price">₱${p.dirtyPrice.toFixed(2)}</span>
+                            <span class="price clean">₱${p.cleanPrice.toFixed(2)}</span>
+                        </div>
+                    `;
+                });
+            } else {
+                 pricingContainer.innerHTML += `<p style="font-size: 13px; color: var(--text-secondary); padding: 16px 0;">Pricing info not available.</p>`;
+            }
+
+            const materialsContainer = document.getElementById('junkshop-materials-tags');
+            materialsContainer.innerHTML = '';
+            shop.materials.forEach(mat => {
+                materialsContainer.innerHTML += `<div class="tag">${mat}</div>`;
+            });
+
+            const servicesContainer = document.getElementById('junkshop-services-tags');
+            servicesContainer.innerHTML = '';
+            shop.services.forEach(srv => {
+                servicesContainer.innerHTML += `<div class="tag">${srv}</div>`;
+            });
+
+            const reviewsContainer = document.getElementById('junkshop-reviews-container');
+            reviewsContainer.innerHTML = `
+                <div class="review-card">
+                    <div class="review-header">
+                        <div class="reviewer-avatar">👩</div>
+                        <div class="reviewer-info">
+                            <div class="name">Maria C.</div>
+                            <div class="star-rating" data-rating="5"></div>
+                        </div>
+                        <span style="font-size: 12px; color: var(--text-secondary);">2d ago</span>
+                    </div>
+                    <p class="review-body">"Great prices and very accommodating staff."</p>
+                </div>
+                 <div class="review-card">
+                    <div class="review-header">
+                        <div class="reviewer-avatar">👨</div>
+                        <div class="reviewer-info">
+                            <div class="name">John D.</div>
+                            <div class="star-rating" data-rating="4"></div>
+                        </div>
+                         <span style="font-size: 12px; color: var(--text-secondary);">1w ago</span>
+                    </div>
+                    <p class="review-body">"Reliable service every time."</p>
+                </div>
+            `;
+            renderStars();
+        }
+
+        function renderStars() {
+            document.querySelectorAll('.star-rating').forEach(el => {
+                const rating = parseFloat(el.dataset.rating);
+                let stars = '';
+                for(let i = 1; i <= 5; i++) {
+                    stars += i <= rating ? '★' : '☆';
+                }
+                el.textContent = stars;
+            });
+        }
+        
+        // --- AI SORTER MODAL LOGIC ---
+        const aiSorterModal = document.getElementById('ai-sorter-modal');
+        const aiChatContainer = document.getElementById('ai-chat-container');
+        const aiSorterInput = document.getElementById('ai-sorter-input');
+        const aiSorterSendBtn = document.getElementById('ai-sorter-send-btn');
+        
+        document.getElementById('closeAiSorterModalBtn').addEventListener('click', () => aiSorterModal.classList.remove('visible'));
+        aiSorterModal.addEventListener('click', (e) => {
+            if (e.target === aiSorterModal) aiSorterModal.classList.remove('visible');
+        });
+        
+        aiSorterSendBtn.addEventListener('click', handleAiSorterSend);
+        aiSorterInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleAiSorterSend();
+        });
+
+        async function showAiSorter() {
+            aiSorterModal.classList.add('visible');
+            aiChatContainer.innerHTML = '<div class="loader" style="display: block;"></div>';
+            
+            const itemNames = lastDetectedItems.map(item => item.item).join(', ');
+            const prompt = `I am using a recycling app. I have the following items: ${itemNames}. Please give me a simple, step-by-step guide on how to properly segregate and prepare these items for collection in the Philippines. Use HTML for basic formatting like <strong> and <ul>. Start with a friendly greeting.`;
+            
+            const initialResponse = await callAiApi(prompt);
+            aiChatContainer.innerHTML = `<div class="ai-message bot">${initialResponse}</div>`;
+        }
+        
+        async function handleAiSorterSend() {
+            const userInput = aiSorterInput.value.trim();
+            if (!userInput) return;
+            
+            appendAiChatMessage(userInput, 'user');
+            aiSorterInput.value = '';
+            aiChatContainer.innerHTML += '<div class="loader" style="display: block; align-self: flex-start; margin: 10px;"></div>';
+            
+            const prompt = `The user asked a follow-up question about waste segregation: "${userInput}". Provide a helpful and concise answer.`;
+            const response = await callAiApi(prompt);
+            
+            aiChatContainer.querySelector('.loader').remove();
+            appendAiChatMessage(response, 'bot');
+        }
+        
+        function appendAiChatMessage(text, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `ai-message ${sender}`;
+            messageDiv.innerHTML = text; // Use innerHTML to render formatting from API
+            aiChatContainer.appendChild(messageDiv);
+            aiChatContainer.scrollTop = aiChatContainer.scrollHeight;
+        }
+        
+        // --- SCHEDULER LOGIC ---
+        function renderScheduler() {
+            const dateContainer = document.getElementById('date-selector-container');
+            dateContainer.innerHTML = '';
+            const today = new Date();
+            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            
+            for (let i = 0; i < 7; i++) {
+                const date = new Date();
+                date.setDate(today.getDate() + i);
+                
+                const day = days[date.getDay()];
+                const dateNum = date.getDate();
+                const isToday = i === 0;
+                
+                const dateItem = document.createElement('div');
+                dateItem.className = 'date-item';
+                if (isToday) dateItem.classList.add('today');
+                dateItem.dataset.date = date.toISOString().split('T')[0];
+                dateItem.innerHTML = `<div class="day">${day}</div><div class="date">${dateNum}</div>`;
+                
+                dateItem.addEventListener('click', () => {
+                    dateItem.classList.toggle('selected');
+                });
+                
+                dateContainer.appendChild(dateItem);
+            }
+            
+            populateTimeSelectors();
+        }
+        
+        function populateTimeSelectors() {
+            const fromSelect = document.getElementById('time-from');
+            const toSelect = document.getElementById('time-to');
+            fromSelect.innerHTML = '';
+            toSelect.innerHTML = '';
+
+            const times = [];
+            for (let i = 8; i <= 17; i++) { // 8 AM to 5 PM (17:00)
+                for (let j = 0; j < 60; j += 30) {
+                    if (i === 17 && j > 0) continue; // Stop at 5:00 PM
+                    const hour = i % 12 === 0 ? 12 : i % 12;
+                    const minute = j.toString().padStart(2, '0');
+                    const ampm = i < 12 ? 'AM' : 'PM';
+                    const timeString = `${hour}:${minute} ${ampm}`;
+                    const value = `${i.toString().padStart(2, '0')}:${minute}`;
+                    times.push({ text: timeString, value: value });
+                }
+            }
+
+            times.forEach(time => {
+                fromSelect.innerHTML += `<option value="${time.value}">${time.text}</option>`;
+                toSelect.innerHTML += `<option value="${time.value}">${time.text}</option>`;
+            });
+            
+            toSelect.value = "17:00"; // Default 'To' time to 5 PM
+
+            fromSelect.addEventListener('change', () => {
+                const fromValue = fromSelect.value;
+                let toIndex = -1;
+                // Enable all options in 'to' select first
+                for(let i=0; i < toSelect.options.length; i++) {
+                    toSelect.options[i].disabled = false;
+                    if(toSelect.options[i].value === fromValue) toIndex = i;
+                }
+                // Disable options before the selected 'from' time
+                for(let i=0; i < toIndex; i++) {
+                    toSelect.options[i].disabled = true;
+                }
+                // If current 'to' time is now disabled, select the next valid one
+                if (toSelect.value < fromValue) {
+                    toSelect.selectedIndex = toIndex + 1;
+                }
+            });
+        }
+        
+        document.getElementById('confirm-post-btn').addEventListener('click', confirmAndPost);
+        
+        function confirmAndPost() {
+            const selectedDates = Array.from(document.querySelectorAll('.date-item.selected')).map(el => {
+                const date = new Date(el.dataset.date);
+                return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            });
+            
+            if (selectedDates.length === 0) {
+                // You might want to show an error message here instead of an alert
+                console.error("No date selected!");
+                return;
+            }
+            
+            const fromTime = document.getElementById('time-from').selectedOptions[0].text;
+            const toTime = document.getElementById('time-to').selectedOptions[0].text;
+            const time = `${fromTime} - ${toTime}`;
+            
+            const instructions = document.getElementById('pickup-instructions').value.trim() || 'No special instructions.';
+            
+            const totalValue = document.getElementById('total-value').textContent;
+            const junkShop = document.getElementById('junk-shop-select').value;
+            const address = document.getElementById('address-input').value;
+            const wasteItems = Array.from(document.querySelectorAll('#detected-items-list .item-card')).map(card => card.dataset.name).join(', ');
+
+            document.getElementById('conf-post-id').textContent = `ECO-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+            document.getElementById('conf-dates').textContent = selectedDates.join(', ');
+            document.getElementById('conf-time').textContent = time;
+            document.getElementById('conf-instructions').textContent = instructions;
+            document.getElementById('conf-waste-items').textContent = wasteItems;
+            document.getElementById('conf-junk-shop').textContent = junkShop;
+            document.getElementById('conf-address').textContent = address;
+            document.getElementById('conf-total-value-2').textContent = totalValue;
+            
+            navigateTo('confirmation-page');
+        }
+        
+        // --- INITIALIZATION & EVENT LISTENERS ---
+        document.addEventListener('DOMContentLoaded', () => {
+            renderStars();
+            renderCollectionList(); 
+            renderJunkshopsOnHome(); 
+
+            const homeActivityEl = document.getElementById('home-recent-activity');
+            homeActivityEl.innerHTML = '<h3 class="section-title">Recent Collections</h3>';
+            mockCollectionsData.slice(0, 2).forEach(item => {
+                 const itemHtml = `
+                    <div class="activity-card" onclick="navigateToTrackDetails(${item.id})">
+                        <div class="activity-image">${materialEmojis[item.title] ? `<img src="${materialEmojis[item.title]}" style="width:100%; height: 100%; object-fit: cover; border-radius: 12px;">` : '♻️'}</div>
+                        <div class="activity-details">
+                            <h4>${item.title}</h4>
+                            <p>${item.junkShop}</p>
+                            <div class="activity-footer">
+                                <div class="activity-value">Est. ₱${item.value.toFixed(2)}</div>
+                                <div class="activity-status status-${item.status.toLowerCase().replace(' ', '-')}">${item.status}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                homeActivityEl.innerHTML += itemHtml;
+            });
+
+            document.querySelectorAll('.accordion-header').forEach(header => {
+                header.addEventListener('click', () => {
+                    const accordionItem = header.parentElement;
+                    accordionItem.classList.toggle('active');
+                });
+            });
+
+            navigateTo('home-page');
+        });
+
+    </script>
+</body>
+</html>

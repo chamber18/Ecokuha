@@ -1,0 +1,51 @@
+{
+  "feature_flags": {
+    "ai_detection": {
+      "enabled": true,
+      "description": "Enable AI-powered waste detection",
+      "rollout_percentage": 100
+    },
+    "real_time_tracking": {
+      "enabled": true,
+      "description": "Enable real-time location tracking",
+      "rollout_percentage": 100
+    },
+    "smart_replies": {
+      "enabled": true,
+      "description": "Enable AI-powered smart reply suggestions",
+      "rollout_percentage": 80
+    },
+    "voice_messages": {
+      "enabled": false,
+      "description": "Enable voice messaging in chat",
+      "rollout_percentage": 0
+    },
+    "advanced_analytics": {
+      "enabled": true,
+      "description": "Enable detailed business analytics for junkshops",
+      "rollout_percentage": 100
+    },
+    "offline_mode": {
+      "enabled": false,
+      "description": "Enable offline functionality",
+      "rollout_percentage": 0
+    },
+    "payment_integration": {
+      "enabled": false,
+      "description": "Enable integrated payment processing",
+      "rollout_percentage": 0
+    },
+    "collector_rating": {
+      "enabled": true,
+      "description": "Enable collector rating and review system",
+      "rollout_percentage": 100
+    },
+    "firestore_posting": {
+      "enabled": true,
+      "description": "Enable Firestore posting for household items",
+      "rollout_percentage": 100
+    }
+  },
+  "version": "1.0.0",
+  "last_updated": "2025-09-11"
+}

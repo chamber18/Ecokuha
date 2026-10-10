@@ -1,0 +1,39 @@
+CATEGORY,ITEM NAME,PRICE RANGE (peso),UNIT,COMMISSION
+glass,Garapa ,0.5,piece,0.095
+glass,Softdrinks_Bottle,0.5-1,piece,0.1-50
+glass,Emperador_Bottle,1,piece,0.1
+glass,Red_Horse_Bottle,0.5-1,piece,0.1
+glass,San_Miguel_Bottle,0.5,piece,0.1
+glass,Shio_Hoc_Tong_Bottle,3,piece,0.1
+glass,Tanduay_Bottle,1.5,piece,0.15
+glass,Ketchup_Bottle,0.2,piece,0.1
+glass,Tanduay_Select_Bottle,0.5,piece,0.1
+,,,,
+metal,Brass_Bronze,250,kg,25
+metal,Can_Aluminum,60,kg,5
+metal,Can_Tray,7,kg,0.5
+metal,Lata,6,kg,0.5
+metal,Cin,7,kg,0.7
+metal,Copper,480,kg,50
+metal,Cyclone,8,kg,0.5
+metal,light_Metal,10,kg,0.5
+metal,Solid_Metal,15,kg,1
+metal,Kaldero,60,kg,5
+metal,Alloy,80,kg,0.5-100
+metal,Stainless_Scrap,30,kg,6
+metal,Pundido,8,kg,0.5
+metal,Metal_Cylinder,15,kg,1
+plastic,Monobloc_Plastic,5,kg,0.2
+plastic,plastic_waste,11,kg,0.5
+plastic,bottle_case,40 - 60,case,6
+plastic,Pet_Bottles,4,kg,0.5
+,,,,
+rubber,Tires,30,piece,5
+,,,,
+e-waste,Washing_machine,100 - 200,piece,50
+e-waste,aircon,500 - 2000,piece,100-150
+e-waste,Battery,150-1000,piece,0.5-100
+e-waste,Electronic_board,10 - 100,kg,1-5
+,,,,
+paper,paper,1-3,kg,0.5-0.25
+paper,Cartoon,6,kg,0.5

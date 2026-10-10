@@ -1,0 +1,56 @@
+{
+  "provinces": [
+    {
+      "name": "Metro Manila",
+      "cities": [
+        "Caloocan",
+        "Las Piñas",
+        "Makati",
+        "Malabon",
+        "Mandaluyong",
+        "Manila",
+        "Marikina",
+        "Muntinlupa",
+        "Navotas",
+        "Parañaque",
+        "Pasay",
+        "Pasig",
+        "Pateros",
+        "Quezon City",
+        "San Juan",
+        "Taguig",
+        "Valenzuela"
+      ]
+    },
+    {
+      "name": "Cebu",
+      "cities": [
+        "Cebu City",
+        "Mandaue",
+        "Lapu-Lapu",
+        "Talisay",
+        "Naga",
+        "Carcar"
+      ]
+    },
+    {
+      "name": "Davao del Sur",
+      "cities": [
+        "Davao City",
+        "Digos"
+      ]
+    },
+    {
+      "name": "Rizal",
+      "cities": [
+        "Antipolo",
+        "Cainta",
+        "Taytay",
+        "Binangonan",
+        "Angono",
+        "San Mateo",
+        "Rodriguez"
+      ]
+    }
+  ]
+}
